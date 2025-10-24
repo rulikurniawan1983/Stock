@@ -22,8 +22,9 @@ Aplikasi web untuk manajemen stock obat hewan yang digunakan oleh Dinas Peternak
   - Jenis hewan yang diobati
   - Tanggal penggunaan
   - Catatan tambahan
-- **Rekam Medis**: Form pencatatan rekam medis hewan
-- **Pelayanan Kesehatan**: Form pelayanan kesehatan hewan dengan anamnesis lengkap
+- **Form Terpadu (Rekomended)**: Form gabungan rekam medis dan pelayanan kesehatan
+- **Rekam Medis**: Form pencatatan rekam medis hewan (legacy)
+- **Pelayanan Kesehatan**: Form pelayanan kesehatan hewan dengan anamnesis lengkap (legacy)
 
 ### Fitur Pelayanan Kesehatan Hewan
 - **Data Pemilik Hewan**: Nama, telepon, alamat, desa, kecamatan
@@ -33,7 +34,17 @@ Aplikasi web untuk manajemen stock obat hewan yang digunakan oleh Dinas Peternak
 - **Penggunaan Obat**: Multiple obat dengan dosis, cara pemberian, catatan
 - **Status Pelayanan**: Selesai, rawat jalan, rawat inap, rujukan
 
-### Fitur Rekam Medis Hewan
+### 🆕 Form Terpadu Rekam Medis & Pelayanan Kesehatan
+- **Informasi Umum**: Bulan, tanggal, nama pemilik, alamat desa & kecamatan
+- **Informasi Hewan**: Nama, jenis, ras, usia, jenis kelamin, berat, warna
+- **Jenis Ternak**: Kuantitas per jenis (Sapi, Kerbau, Kambing, Domba, Kucing, Kelinci, Ayam, Anjing, Lainnya)
+- **Gejala Klinis**: 25+ gejala dengan checkbox (Scabies, Helmintiasis, ORF, Bloat, CRD/Snot, dll.)
+- **Pelayanan Kesehatan**: Jenis pelayanan, keluhan, anamnesis, pemeriksaan fisik, diagnosis, rencana pengobatan
+- **Pengobatan**: Jenis pengobatan, dosis per ekor, petugas, status hewan
+- **Penggunaan Obat**: Multiple obat dengan dosis, cara pemberian, catatan
+- **Integrasi Database**: Menyimpan ke 5 tabel sekaligus (animal_owners, animals, medical_records, health_services, health_service_medicines)
+
+### Fitur Rekam Medis Hewan (Legacy)
 - **Data Pemilik**: Nama, alamat desa, alamat kecamatan
 - **Data Hewan**: Jenis ternak, total hewan
 - **Gejala Klinis**: Multiple gejala yang dapat dipilih
@@ -61,6 +72,21 @@ Aplikasi web untuk manajemen stock obat hewan yang digunakan oleh Dinas Peternak
 - Akun Supabase
 - Akun GitHub
 - Akun Vercel (untuk deployment)
+
+## 🎯 Cara Mengakses Form Terpadu
+
+### Dari Dashboard UPT:
+1. Login ke dashboard UPT
+2. Klik dropdown "Kesehatan Hewan" 
+3. Pilih "**Form Terpadu (Rekomended)**"
+
+### Dari Dashboard Dinas:
+1. Login ke dashboard Dinas
+2. Klik dropdown "Kesehatan Hewan"
+3. Pilih "**Form Terpadu (Rekomended)**"
+
+### URL Langsung:
+- `/pelayanan-terpadu`
 
 ## 🚀 Instalasi dan Setup
 
@@ -251,6 +277,16 @@ Untuk pertanyaan atau dukungan, silakan hubungi:
 - GitHub Issues: [Create an issue](https://github.com/your-repo/issues)
 
 ## 🔄 Changelog
+
+### v2.1.0
+- ✅ **Form Terpadu Rekam Medis & Pelayanan Kesehatan** - Form gabungan yang efisien
+- ✅ **Excel Import untuk Penggunaan Obat** - Import data bulk dengan template
+- ✅ **Security Fix** - Mengganti xlsx dengan exceljs untuk keamanan
+- ✅ **Enhanced Navigation** - Form terpadu sebagai opsi rekomended
+- ✅ **Integrated Database** - Menyimpan ke 5 tabel sekaligus
+- ✅ **25+ Gejala Klinis** - Checkbox untuk gejala yang komprehensif
+- ✅ **Multiple Medicine Support** - Bisa tambah banyak obat dalam satu form
+- ✅ **Color-coded Sections** - Interface yang lebih user-friendly
 
 ### v2.0.0
 - ✅ Fitur Pelayanan Kesehatan Hewan
