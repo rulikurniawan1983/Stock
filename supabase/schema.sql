@@ -404,6 +404,222 @@ BEGIN
     END IF;
 END $$;
 
+-- Add missing columns to medicine_usage table if they don't exist
+DO $$ 
+BEGIN
+    -- Add veterinarian_name column
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'medicine_usage' 
+        AND column_name = 'veterinarian_name'
+    ) THEN
+        ALTER TABLE medicine_usage ADD COLUMN veterinarian_name VARCHAR(255);
+    END IF;
+    
+    -- Add patient_name column
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'medicine_usage' 
+        AND column_name = 'patient_name'
+    ) THEN
+        ALTER TABLE medicine_usage ADD COLUMN patient_name VARCHAR(255);
+    END IF;
+    
+    -- Add dosage column
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'medicine_usage' 
+        AND column_name = 'dosage'
+    ) THEN
+        ALTER TABLE medicine_usage ADD COLUMN dosage VARCHAR(100);
+    END IF;
+    
+    -- Add administration_route column
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'medicine_usage' 
+        AND column_name = 'administration_route'
+    ) THEN
+        ALTER TABLE medicine_usage ADD COLUMN administration_route VARCHAR(50);
+    END IF;
+    
+    -- Add updated_at column
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'medicine_usage' 
+        AND column_name = 'updated_at'
+    ) THEN
+        ALTER TABLE medicine_usage ADD COLUMN updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
+    END IF;
+END $$;
+
+-- Add missing columns to other tables if they don't exist
+DO $$ 
+BEGIN
+    -- Add missing columns to medicines table
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'medicines' 
+        AND column_name = 'min_stock_level'
+    ) THEN
+        ALTER TABLE medicines ADD COLUMN min_stock_level INTEGER DEFAULT 10;
+    END IF;
+    
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'medicines' 
+        AND column_name = 'max_stock_level'
+    ) THEN
+        ALTER TABLE medicines ADD COLUMN max_stock_level INTEGER DEFAULT 1000;
+    END IF;
+    
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'medicines' 
+        AND column_name = 'expiry_date'
+    ) THEN
+        ALTER TABLE medicines ADD COLUMN expiry_date DATE;
+    END IF;
+    
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'medicines' 
+        AND column_name = 'batch_number'
+    ) THEN
+        ALTER TABLE medicines ADD COLUMN batch_number VARCHAR(100);
+    END IF;
+    
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'medicines' 
+        AND column_name = 'supplier'
+    ) THEN
+        ALTER TABLE medicines ADD COLUMN supplier VARCHAR(255);
+    END IF;
+    
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'medicines' 
+        AND column_name = 'price_per_unit'
+    ) THEN
+        ALTER TABLE medicines ADD COLUMN price_per_unit DECIMAL(10,2);
+    END IF;
+    
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'medicines' 
+        AND column_name = 'description'
+    ) THEN
+        ALTER TABLE medicines ADD COLUMN description TEXT;
+    END IF;
+    
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'medicines' 
+        AND column_name = 'is_active'
+    ) THEN
+        ALTER TABLE medicines ADD COLUMN is_active BOOLEAN DEFAULT TRUE;
+    END IF;
+    
+    -- Add missing columns to upt table
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'upt' 
+        AND column_name = 'email'
+    ) THEN
+        ALTER TABLE upt ADD COLUMN email VARCHAR(255);
+    END IF;
+    
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'upt' 
+        AND column_name = 'website'
+    ) THEN
+        ALTER TABLE upt ADD COLUMN website VARCHAR(255);
+    END IF;
+    
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'upt' 
+        AND column_name = 'description'
+    ) THEN
+        ALTER TABLE upt ADD COLUMN description TEXT;
+    END IF;
+    
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'upt' 
+        AND column_name = 'is_active'
+    ) THEN
+        ALTER TABLE upt ADD COLUMN is_active BOOLEAN DEFAULT TRUE;
+    END IF;
+    
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'upt' 
+        AND column_name = 'updated_at'
+    ) THEN
+        ALTER TABLE upt ADD COLUMN updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
+    END IF;
+    
+    -- Add missing columns to users table
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'users' 
+        AND column_name = 'first_name'
+    ) THEN
+        ALTER TABLE users ADD COLUMN first_name VARCHAR(100);
+    END IF;
+    
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'users' 
+        AND column_name = 'last_name'
+    ) THEN
+        ALTER TABLE users ADD COLUMN last_name VARCHAR(100);
+    END IF;
+    
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'users' 
+        AND column_name = 'phone'
+    ) THEN
+        ALTER TABLE users ADD COLUMN phone VARCHAR(20);
+    END IF;
+    
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'users' 
+        AND column_name = 'avatar_url'
+    ) THEN
+        ALTER TABLE users ADD COLUMN avatar_url TEXT;
+    END IF;
+    
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'users' 
+        AND column_name = 'is_active'
+    ) THEN
+        ALTER TABLE users ADD COLUMN is_active BOOLEAN DEFAULT TRUE;
+    END IF;
+    
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'users' 
+        AND column_name = 'last_login'
+    ) THEN
+        ALTER TABLE users ADD COLUMN last_login TIMESTAMP WITH TIME ZONE;
+    END IF;
+    
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'users' 
+        AND column_name = 'updated_at'
+    ) THEN
+        ALTER TABLE users ADD COLUMN updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
+    END IF;
+END $$;
+
 -- Create indexes for medical_records
 CREATE INDEX IF NOT EXISTS idx_medical_records_tanggal ON medical_records(tanggal);
 CREATE INDEX IF NOT EXISTS idx_medical_records_pemilik ON medical_records(pemilik);
