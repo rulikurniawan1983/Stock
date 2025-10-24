@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/components/AuthProvider'
 import { supabase, Medicine, MedicineUsage, UPT } from '@/lib/supabase'
 import EditUPTModal from '@/components/EditUPTModal'
+import * as ExcelJS from 'exceljs'
 import { 
   Package, 
   Users, 
@@ -211,6 +212,239 @@ export default function DinasDashboard() {
       saveAs(data, fileName)
     } catch (error) {
       console.error('Error exporting to Excel:', error)
+    }
+  }
+
+  const exportPelayananLapanganToExcel = async () => {
+    try {
+      if (!supabase) {
+        console.error('Supabase client not initialized')
+        return
+      }
+
+      // Fetch medical records data
+      const { data: medicalRecords, error } = await supabase
+        .from('medical_records')
+        .select(`
+          *,
+          upt(name)
+        `)
+        .order('tanggal', { ascending: false })
+
+      if (error) throw error
+
+      // Check if data exists
+      if (!medicalRecords || medicalRecords.length === 0) {
+        alert('Tidak ada data pelayanan lapangan untuk diexport.')
+        return
+      }
+
+      const workbook = new ExcelJS.Workbook()
+      const worksheet = workbook.addWorksheet('Pelayanan Lapangan')
+
+      // Set headers
+      worksheet.columns = [
+        { header: 'Bulan', key: 'bulan', width: 15 },
+        { header: 'Tanggal', key: 'tanggal', width: 15 },
+        { header: 'UPT', key: 'upt_name', width: 25 },
+        { header: 'Pemilik', key: 'pemilik', width: 25 },
+        { header: 'Alamat Desa', key: 'alamat_desa', width: 25 },
+        { header: 'Alamat Kecamatan', key: 'alamat_kecamatan', width: 25 },
+        { header: 'Jenis Ternak', key: 'jenis_ternak', width: 20 },
+        { header: 'Total Hewan', key: 'total_hewan', width: 15 },
+        { header: 'Gejala Klinis', key: 'gejala_klinis', width: 30 },
+        { header: 'Jenis Pengobatan', key: 'jenis_pengobatan', width: 25 },
+        { header: 'Dosis (ml/ekor)', key: 'dosis_ml_ekor', width: 15 },
+        { header: 'Petugas', key: 'petugas', width: 25 },
+        { header: 'Status', key: 'status', width: 15 }
+      ]
+
+      // Style headers
+      worksheet.getRow(1).font = { bold: true }
+      worksheet.getRow(1).fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFE6E6FA' }
+      }
+
+      // Add data
+      medicalRecords?.forEach((record: any) => {
+        worksheet.addRow({
+          bulan: record.bulan,
+          tanggal: new Date(record.tanggal).toLocaleDateString('id-ID'),
+          upt_name: record.upt?.name || '',
+          pemilik: record.pemilik,
+          alamat_desa: record.alamat_desa,
+          alamat_kecamatan: record.alamat_kecamatan,
+          jenis_ternak: JSON.stringify(record.jenis_ternak),
+          total_hewan: record.total_hewan,
+          gejala_klinis: record.gejala_klinis?.join(', ') || '',
+          jenis_pengobatan: record.jenis_pengobatan,
+          dosis_ml_ekor: record.dosis_ml_ekor,
+          petugas: record.petugas,
+          status: record.status
+        })
+      })
+
+      // Auto-fit columns
+      worksheet.columns.forEach(column => {
+        if (column.eachCell) {
+          column.eachCell({ includeEmpty: true }, (cell) => {
+            if (cell.value) {
+              const columnLength = cell.value.toString().length
+              if (column.width && columnLength > column.width) {
+                column.width = columnLength + 2
+              }
+            }
+          })
+        }
+      })
+
+      // Generate filename
+      const currentDate = new Date().toISOString().split('T')[0]
+      const filename = `Pelayanan_Lapangan_${currentDate}.xlsx`
+
+      // Save file
+      const buffer = await workbook.xlsx.writeBuffer()
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = filename
+      link.click()
+      window.URL.revokeObjectURL(url)
+
+    } catch (error) {
+      console.error('Error exporting pelayanan lapangan:', error)
+      console.error('Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined
+      })
+      alert(`Gagal mengexport data pelayanan lapangan ke Excel. Error: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
+  }
+
+  const exportPelayananKlinikToExcel = async () => {
+    try {
+      if (!supabase) {
+        console.error('Supabase client not initialized')
+        return
+      }
+
+      // Fetch health services data
+      const { data: healthServices, error } = await supabase
+        .from('health_services')
+        .select(`
+          *,
+          animals(
+            name, 
+            species, 
+            breed,
+            animal_owners(
+              name, 
+              phone
+            )
+          ),
+          upt(name)
+        `)
+        .order('service_date', { ascending: false })
+
+      if (error) throw error
+
+      // Check if data exists
+      if (!healthServices || healthServices.length === 0) {
+        alert('Tidak ada data pelayanan klinik hewan untuk diexport.')
+        return
+      }
+
+      const workbook = new ExcelJS.Workbook()
+      const worksheet = workbook.addWorksheet('Pelayanan Klinik Hewan')
+
+      // Set headers
+      worksheet.columns = [
+        { header: 'Tanggal Layanan', key: 'service_date', width: 15 },
+        { header: 'UPT', key: 'upt_name', width: 20 },
+        { header: 'Jenis Layanan', key: 'service_type', width: 20 },
+        { header: 'Nama Hewan', key: 'animal_name', width: 20 },
+        { header: 'Jenis Hewan', key: 'animal_species', width: 20 },
+        { header: 'Ras', key: 'animal_breed', width: 20 },
+        { header: 'Pemilik', key: 'owner_name', width: 25 },
+        { header: 'Telepon Pemilik', key: 'owner_phone', width: 20 },
+        { header: 'Keluhan Utama', key: 'chief_complaint', width: 30 },
+        { header: 'Anamnesis', key: 'anamnesis', width: 30 },
+        { header: 'Pemeriksaan Fisik', key: 'physical_examination', width: 30 },
+        { header: 'Diagnosis', key: 'diagnosis', width: 30 },
+        { header: 'Rencana Pengobatan', key: 'treatment_plan', width: 30 },
+        { header: 'Dokter Hewan', key: 'veterinarian_name', width: 25 },
+        { header: 'Status', key: 'status', width: 15 },
+        { header: 'Catatan Follow-up', key: 'follow_up_notes', width: 30 }
+      ]
+
+      // Style headers
+      worksheet.getRow(1).font = { bold: true }
+      worksheet.getRow(1).fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFE6E6FA' }
+      }
+
+      // Add data
+      healthServices?.forEach((service: any) => {
+        worksheet.addRow({
+          service_date: new Date(service.service_date).toLocaleDateString('id-ID'),
+          upt_name: service.upt?.name || '',
+          service_type: service.service_type,
+          animal_name: service.animals?.name || '',
+          animal_species: service.animals?.species || '',
+          animal_breed: service.animals?.breed || '',
+          owner_name: service.animals?.animal_owners?.name || '',
+          owner_phone: service.animals?.animal_owners?.phone || '',
+          chief_complaint: service.chief_complaint || '',
+          anamnesis: service.anamnesis || '',
+          physical_examination: service.physical_examination || '',
+          diagnosis: service.diagnosis || '',
+          treatment_plan: service.treatment_plan || '',
+          veterinarian_name: service.veterinarian_name,
+          status: service.status,
+          follow_up_notes: service.follow_up_notes || ''
+        })
+      })
+
+      // Auto-fit columns
+      worksheet.columns.forEach(column => {
+        if (column.eachCell) {
+          column.eachCell({ includeEmpty: true }, (cell) => {
+            if (cell.value) {
+              const columnLength = cell.value.toString().length
+              if (column.width && columnLength > column.width) {
+                column.width = columnLength + 2
+              }
+            }
+          })
+        }
+      })
+
+      // Generate filename
+      const currentDate = new Date().toISOString().split('T')[0]
+      const filename = `Pelayanan_Klinik_Hewan_${currentDate}.xlsx`
+
+      // Save file
+      const buffer = await workbook.xlsx.writeBuffer()
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = filename
+      link.click()
+      window.URL.revokeObjectURL(url)
+
+    } catch (error) {
+      console.error('Error exporting pelayanan klinik:', error)
+      console.error('Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined
+      })
+      alert(`Gagal mengexport data pelayanan klinik hewan ke Excel. Error: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
@@ -690,13 +924,22 @@ export default function DinasDashboard() {
             <div className="card">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-lg font-medium text-gray-900">Pelayanan Lapangan</h3>
-                <button
-                  onClick={() => router.push('/rekam-medis/daftar')}
-                  className="btn-primary flex items-center gap-2"
-                >
-                  <Stethoscope className="h-4 w-4" />
-                  Lihat Semua Pelayanan Lapangan
-                </button>
+                <div className="flex gap-3">
+                  <button
+                    onClick={exportPelayananLapanganToExcel}
+                    className="btn-secondary flex items-center gap-2"
+                  >
+                    <Download className="h-4 w-4" />
+                    Export Excel
+                  </button>
+                  <button
+                    onClick={() => router.push('/rekam-medis/daftar')}
+                    className="btn-primary flex items-center gap-2"
+                  >
+                    <Stethoscope className="h-4 w-4" />
+                    Lihat Semua Pelayanan Lapangan
+                  </button>
+                </div>
               </div>
               
               <div className="text-center py-8">
@@ -718,13 +961,22 @@ export default function DinasDashboard() {
             <div className="card">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-lg font-medium text-gray-900">Pelayanan Klinik Hewan</h3>
-                <button
-                  onClick={() => router.push('/pelayanan-kesehatan/daftar')}
-                  className="btn-primary flex items-center gap-2"
-                >
-                  <Heart className="h-4 w-4" />
-                  Lihat Semua Pelayanan
-                </button>
+                <div className="flex gap-3">
+                  <button
+                    onClick={exportPelayananKlinikToExcel}
+                    className="btn-secondary flex items-center gap-2"
+                  >
+                    <Download className="h-4 w-4" />
+                    Export Excel
+                  </button>
+                  <button
+                    onClick={() => router.push('/pelayanan-kesehatan/daftar')}
+                    className="btn-primary flex items-center gap-2"
+                  >
+                    <Heart className="h-4 w-4" />
+                    Lihat Semua Pelayanan
+                  </button>
+                </div>
               </div>
               
               <div className="text-center py-8">
