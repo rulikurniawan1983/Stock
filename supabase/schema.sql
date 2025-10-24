@@ -271,10 +271,21 @@ CREATE TABLE IF NOT EXISTS medical_records (
   dosis_ml_ekor DECIMAL(10,2) NOT NULL,
   petugas VARCHAR(255) NOT NULL,
   status VARCHAR(20) NOT NULL CHECK (status IN ('AKTIF', 'PASIF', 'SEMI AKTIF')),
-  upt_id UUID REFERENCES upt(id) ON DELETE CASCADE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- Add upt_id column if it doesn't exist
+DO $$ 
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'medical_records' 
+        AND column_name = 'upt_id'
+    ) THEN
+        ALTER TABLE medical_records ADD COLUMN upt_id UUID REFERENCES upt(id) ON DELETE CASCADE;
+    END IF;
+END $$;
 
 -- Create indexes for medical_records
 CREATE INDEX IF NOT EXISTS idx_medical_records_tanggal ON medical_records(tanggal);
@@ -594,14 +605,30 @@ INSERT INTO health_service_medicines (health_service_id, medicine_id, quantity_u
 ON CONFLICT DO NOTHING;
 
 -- Insert sample medical records
-INSERT INTO medical_records (bulan, tanggal, pemilik, alamat_desa, alamat_kecamatan, jenis_ternak, total_hewan, gejala_klinis, jenis_pengobatan, dosis_ml_ekor, petugas, status, upt_id) VALUES
-  ('Januari 2024', '2024-01-15', 'Budi Santoso', 'Desa Sukamaju', 'Kecamatan Sukajaya', '{"sapi": 1, "kerbau": 0, "kambing": 0, "domba": 0, "kucing": 0, "kelinci": 0, "ayam": 0, "anjing": 0, "lainnya": 0}', 1, '{"Demam", "Anorexia", "Enteritis/Diare"}', 'Antibiotik Amoxicillin', 10.0, 'Dr. Ahmad Wijaya', 'AKTIF', '11111111-1111-1111-1111-111111111111'),
-  ('Januari 2024', '2024-01-16', 'Siti Rahayu', 'Desa Makmur', 'Kecamatan Sukajaya', '{"sapi": 0, "kerbau": 0, "kambing": 1, "domba": 0, "kucing": 0, "kelinci": 0, "ayam": 0, "anjing": 0, "lainnya": 0}', 1, '{"CRD/SNOT", "Anorexia"}', 'Antibiotik Penicillin', 2.0, 'Dr. Ahmad Wijaya', 'AKTIF', '11111111-1111-1111-1111-111111111111'),
-  ('Januari 2024', '2024-01-17', 'Ahmad Wijaya', 'Desa Sejahtera', 'Kecamatan Sukajaya', '{"sapi": 0, "kerbau": 0, "kambing": 0, "domba": 0, "kucing": 0, "kelinci": 0, "ayam": 5, "anjing": 0, "lainnya": 0}', 5, '{"Vaksinasi rabie"}', 'Vitamin A', 1.0, 'Dr. Siti Rahayu', 'AKTIF', '22222222-2222-2222-2222-222222222222'),
-  ('Januari 2024', '2024-01-18', 'Maya Sari', 'Desa Bahagia', 'Kecamatan Sukajaya', '{"sapi": 0, "kerbau": 0, "kambing": 0, "domba": 0, "kucing": 1, "kelinci": 0, "ayam": 0, "anjing": 0, "lainnya": 0}', 1, '{"Maldigesti", "Anorexia"}', 'Antibiotik Tetracycline', 4.0, 'Dr. Siti Rahayu', 'AKTIF', '22222222-2222-2222-2222-222222222222'),
-  ('Januari 2024', '2024-01-19', 'Rudi Hartono', 'Desa Damai', 'Kecamatan Sukajaya', '{"sapi": 0, "kerbau": 0, "kambing": 0, "domba": 0, "kucing": 0, "kelinci": 0, "ayam": 0, "anjing": 1, "lainnya": 0}', 1, '{"Luka", "Infeksi Luar"}', 'Antiseptik Povidone Iodine', 50.0, 'Dr. Budi Santoso', 'AKTIF', '33333333-3333-3333-3333-333333333333'),
-  ('Januari 2024', '2024-01-20', 'Dewi Lestari', 'Desa Indah', 'Kecamatan Sukajaya', '{"sapi": 0, "kerbau": 0, "kambing": 0, "domba": 1, "kucing": 0, "kelinci": 0, "ayam": 0, "anjing": 0, "lainnya": 0}', 1, '{"Prolapsusuteri", "Anorexia"}', 'Vitamin E', 2.0, 'Dr. Budi Santoso', 'SEMI AKTIF', '33333333-3333-3333-3333-333333333333')
+INSERT INTO medical_records (bulan, tanggal, pemilik, alamat_desa, alamat_kecamatan, jenis_ternak, total_hewan, gejala_klinis, jenis_pengobatan, dosis_ml_ekor, petugas, status) VALUES
+  ('Januari 2024', '2024-01-15', 'Budi Santoso', 'Desa Sukamaju', 'Kecamatan Sukajaya', '{"sapi": 1, "kerbau": 0, "kambing": 0, "domba": 0, "kucing": 0, "kelinci": 0, "ayam": 0, "anjing": 0, "lainnya": 0}', 1, '{"Demam", "Anorexia", "Enteritis/Diare"}', 'Antibiotik Amoxicillin', 10.0, 'Dr. Ahmad Wijaya', 'AKTIF'),
+  ('Januari 2024', '2024-01-16', 'Siti Rahayu', 'Desa Makmur', 'Kecamatan Sukajaya', '{"sapi": 0, "kerbau": 0, "kambing": 1, "domba": 0, "kucing": 0, "kelinci": 0, "ayam": 0, "anjing": 0, "lainnya": 0}', 1, '{"CRD/SNOT", "Anorexia"}', 'Antibiotik Penicillin', 2.0, 'Dr. Ahmad Wijaya', 'AKTIF'),
+  ('Januari 2024', '2024-01-17', 'Ahmad Wijaya', 'Desa Sejahtera', 'Kecamatan Sukajaya', '{"sapi": 0, "kerbau": 0, "kambing": 0, "domba": 0, "kucing": 0, "kelinci": 0, "ayam": 5, "anjing": 0, "lainnya": 0}', 5, '{"Vaksinasi rabie"}', 'Vitamin A', 1.0, 'Dr. Siti Rahayu', 'AKTIF'),
+  ('Januari 2024', '2024-01-18', 'Maya Sari', 'Desa Bahagia', 'Kecamatan Sukajaya', '{"sapi": 0, "kerbau": 0, "kambing": 0, "domba": 0, "kucing": 1, "kelinci": 0, "ayam": 0, "anjing": 0, "lainnya": 0}', 1, '{"Maldigesti", "Anorexia"}', 'Antibiotik Tetracycline', 4.0, 'Dr. Siti Rahayu', 'AKTIF'),
+  ('Januari 2024', '2024-01-19', 'Rudi Hartono', 'Desa Damai', 'Kecamatan Sukajaya', '{"sapi": 0, "kerbau": 0, "kambing": 0, "domba": 0, "kucing": 0, "kelinci": 0, "ayam": 0, "anjing": 1, "lainnya": 0}', 1, '{"Luka", "Infeksi Luar"}', 'Antiseptik Povidone Iodine', 50.0, 'Dr. Budi Santoso', 'AKTIF'),
+  ('Januari 2024', '2024-01-20', 'Dewi Lestari', 'Desa Indah', 'Kecamatan Sukajaya', '{"sapi": 0, "kerbau": 0, "kambing": 0, "domba": 1, "kucing": 0, "kelinci": 0, "ayam": 0, "anjing": 0, "lainnya": 0}', 1, '{"Prolapsusuteri", "Anorexia"}', 'Vitamin E', 2.0, 'Dr. Budi Santoso', 'SEMI AKTIF')
 ON CONFLICT DO NOTHING;
+
+-- Update existing medical records with upt_id
+UPDATE medical_records 
+SET upt_id = '11111111-1111-1111-1111-111111111111' 
+WHERE pemilik IN ('Budi Santoso', 'Siti Rahayu') 
+AND upt_id IS NULL;
+
+UPDATE medical_records 
+SET upt_id = '22222222-2222-2222-2222-222222222222' 
+WHERE pemilik IN ('Ahmad Wijaya', 'Maya Sari') 
+AND upt_id IS NULL;
+
+UPDATE medical_records 
+SET upt_id = '33333333-3333-3333-3333-333333333333' 
+WHERE pemilik IN ('Rudi Hartono', 'Dewi Lestari') 
+AND upt_id IS NULL;
 
 -- Insert sample medicine usage
 INSERT INTO medicine_usage (medicine_id, upt_id, quantity_used, disease_treated, animal_type, usage_date, notes) VALUES
