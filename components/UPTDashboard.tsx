@@ -11,7 +11,8 @@ import {
   Calendar,
   FileText,
   Stethoscope,
-  Heart
+  Heart,
+  ChevronDown
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
@@ -23,6 +24,7 @@ export default function UPTDashboard() {
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('overview')
   const [showAddUsage, setShowAddUsage] = useState(false)
+  const [showMedicalDropdown, setShowMedicalDropdown] = useState(false)
 
   useEffect(() => {
     fetchData()
@@ -171,28 +173,50 @@ export default function UPTDashboard() {
             </div>
           </div>
 
-          <div className="card cursor-pointer hover:shadow-lg transition-shadow" onClick={() => router.push('/rekam-medis')}>
+          <div className="card relative">
             <div className="flex items-center">
               <div className="p-2 bg-purple-100 rounded-lg">
                 <Stethoscope className="h-6 w-6 text-purple-600" />
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Rekam Medis</p>
+              <div className="ml-4 flex-1">
+                <p className="text-sm font-medium text-gray-600">Kesehatan Hewan</p>
                 <p className="text-lg font-bold text-purple-600">Tambah Baru</p>
               </div>
+              <button
+                onClick={() => setShowMedicalDropdown(!showMedicalDropdown)}
+                className="p-1 hover:bg-gray-100 rounded"
+              >
+                <ChevronDown className={`h-4 w-4 text-gray-500 transition-transform ${showMedicalDropdown ? 'rotate-180' : ''}`} />
+              </button>
             </div>
-          </div>
-
-          <div className="card cursor-pointer hover:shadow-lg transition-shadow" onClick={() => router.push('/pelayanan-kesehatan')}>
-            <div className="flex items-center">
-              <div className="p-2 bg-pink-100 rounded-lg">
-                <Heart className="h-6 w-6 text-pink-600" />
+            
+            {/* Dropdown Menu */}
+            {showMedicalDropdown && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                <div className="py-2">
+                  <button
+                    onClick={() => {
+                      router.push('/rekam-medis')
+                      setShowMedicalDropdown(false)
+                    }}
+                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                  >
+                    <Stethoscope className="h-4 w-4" />
+                    Tambah Rekam Medis
+                  </button>
+                  <button
+                    onClick={() => {
+                      router.push('/pelayanan-kesehatan')
+                      setShowMedicalDropdown(false)
+                    }}
+                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                  >
+                    <Heart className="h-4 w-4" />
+                    Tambah Pelayanan Kesehatan
+                  </button>
+                </div>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Pelayanan</p>
-                <p className="text-lg font-bold text-pink-600">Kesehatan</p>
-              </div>
-            </div>
+            )}
           </div>
         </div>
 
@@ -204,8 +228,7 @@ export default function UPTDashboard() {
                 { id: 'overview', name: 'Overview' },
                 { id: 'medicines', name: 'Daftar Obat' },
                 { id: 'usage', name: 'Penggunaan Obat' },
-                { id: 'medical', name: 'Rekam Medis' },
-                { id: 'health', name: 'Pelayanan Kesehatan' }
+                { id: 'medical', name: 'Kesehatan Hewan' }
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -345,77 +368,79 @@ export default function UPTDashboard() {
         )}
 
         {activeTab === 'medical' && (
-          <div className="card">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-medium text-gray-900">Rekam Medis Hewan</h3>
-              <div className="flex space-x-3">
-                <button
-                  onClick={() => router.push('/rekam-medis/daftar')}
-                  className="btn-secondary flex items-center gap-2"
-                >
-                  <FileText className="h-4 w-4" />
-                  Lihat Semua
-                </button>
+          <div className="space-y-6">
+            {/* Rekam Medis Section */}
+            <div className="card">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-lg font-medium text-gray-900">Rekam Medis Hewan</h3>
+                <div className="flex space-x-3">
+                  <button
+                    onClick={() => router.push('/rekam-medis/daftar')}
+                    className="btn-secondary flex items-center gap-2"
+                  >
+                    <FileText className="h-4 w-4" />
+                    Lihat Semua
+                  </button>
+                  <button
+                    onClick={() => router.push('/rekam-medis')}
+                    className="btn-primary flex items-center gap-2"
+                  >
+                    <Stethoscope className="h-4 w-4" />
+                    Tambah Rekam Medis
+                  </button>
+                </div>
+              </div>
+              
+              <div className="text-center py-8">
+                <Stethoscope className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h4 className="text-lg font-medium text-gray-900 mb-2">Rekam Medis Hewan</h4>
+                <p className="text-gray-600 mb-4">
+                  Catat rekam medis hewan dengan lengkap termasuk gejala klinis, pengobatan, dan informasi pemilik
+                </p>
                 <button
                   onClick={() => router.push('/rekam-medis')}
-                  className="btn-primary flex items-center gap-2"
+                  className="btn-primary"
                 >
-                  <Stethoscope className="h-4 w-4" />
-                  Tambah Rekam Medis
+                  Mulai Rekam Medis
                 </button>
               </div>
             </div>
-            
-            <div className="text-center py-12">
-              <Stethoscope className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h4 className="text-lg font-medium text-gray-900 mb-2">Rekam Medis Hewan</h4>
-              <p className="text-gray-600 mb-6">
-                Catat rekam medis hewan dengan lengkap termasuk gejala klinis, pengobatan, dan informasi pemilik
-              </p>
-              <button
-                onClick={() => router.push('/rekam-medis')}
-                className="btn-primary"
-              >
-                Mulai Rekam Medis
-              </button>
-            </div>
-          </div>
-        )}
 
-        {activeTab === 'health' && (
-          <div className="card">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-medium text-gray-900">Pelayanan Kesehatan Hewan</h3>
-              <div className="flex space-x-3">
-                <button
-                  onClick={() => router.push('/pelayanan-kesehatan/daftar')}
-                  className="btn-secondary flex items-center gap-2"
-                >
-                  <FileText className="h-4 w-4" />
-                  Lihat Semua
-                </button>
+            {/* Pelayanan Kesehatan Section */}
+            <div className="card">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-lg font-medium text-gray-900">Pelayanan Kesehatan Hewan</h3>
+                <div className="flex space-x-3">
+                  <button
+                    onClick={() => router.push('/pelayanan-kesehatan/daftar')}
+                    className="btn-secondary flex items-center gap-2"
+                  >
+                    <FileText className="h-4 w-4" />
+                    Lihat Semua
+                  </button>
+                  <button
+                    onClick={() => router.push('/pelayanan-kesehatan')}
+                    className="btn-primary flex items-center gap-2"
+                  >
+                    <Heart className="h-4 w-4" />
+                    Tambah Pelayanan
+                  </button>
+                </div>
+              </div>
+              
+              <div className="text-center py-8">
+                <Heart className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h4 className="text-lg font-medium text-gray-900 mb-2">Pelayanan Kesehatan Hewan</h4>
+                <p className="text-gray-600 mb-4">
+                  Catat pelayanan kesehatan hewan dengan lengkap termasuk anamnesis, pemeriksaan fisik, diagnosis, dan penggunaan obat
+                </p>
                 <button
                   onClick={() => router.push('/pelayanan-kesehatan')}
-                  className="btn-primary flex items-center gap-2"
+                  className="btn-primary"
                 >
-                  <Heart className="h-4 w-4" />
-                  Tambah Pelayanan
+                  Mulai Pelayanan Kesehatan
                 </button>
               </div>
-            </div>
-            
-            <div className="text-center py-12">
-              <Heart className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h4 className="text-lg font-medium text-gray-900 mb-2">Pelayanan Kesehatan Hewan</h4>
-              <p className="text-gray-600 mb-6">
-                Catat pelayanan kesehatan hewan dengan lengkap termasuk anamnesis, pemeriksaan fisik, diagnosis, dan penggunaan obat
-              </p>
-              <button
-                onClick={() => router.push('/pelayanan-kesehatan')}
-                className="btn-primary"
-              >
-                Mulai Pelayanan Kesehatan
-              </button>
             </div>
           </div>
         )}

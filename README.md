@@ -114,23 +114,12 @@ Setelah menjalankan setup database, Anda dapat login dengan akun berikut:
 - **Password**: admin123
 
 ### UPT Puskeswan (6 UPT)
-- **Email**: upt1@yankes.com
-- **Password**: upt123
-
-- **Email**: upt2@yankes.com
-- **Password**: upt123
-
-- **Email**: upt3@yankes.com
-- **Password**: upt123
-
-- **Email**: upt4@yankes.com
-- **Password**: upt123
-
-- **Email**: upt5@yankes.com
-- **Password**: upt123
-
-- **Email**: upt6@yankes.com
-- **Password**: upt123
+- **Email**: upt1@yankes.com - **Password**: upt123 (UPT Puskeswan 1)
+- **Email**: upt2@yankes.com - **Password**: upt123 (UPT Puskeswan 2)
+- **Email**: upt3@yankes.com - **Password**: upt123 (UPT Puskeswan 3)
+- **Email**: upt4@yankes.com - **Password**: upt123 (UPT Puskeswan 4)
+- **Email**: upt5@yankes.com - **Password**: upt123 (UPT Puskeswan 5)
+- **Email**: upt6@yankes.com - **Password**: upt123 (UPT Puskeswan 6)
 
 ## 🗄️ Database Schema
 

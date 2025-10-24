@@ -139,12 +139,12 @@ async function setupDatabase() {
     console.log('Setup completed!')
     console.log('\nSample accounts:')
     console.log('Dinas Admin: admin@yankes.com / admin123')
-    console.log('UPT 1: upt1@yankes.com / upt123')
-    console.log('UPT 2: upt2@yankes.com / upt123')
-    console.log('UPT 3: upt3@yankes.com / upt123')
-    console.log('UPT 4: upt4@yankes.com / upt123')
-    console.log('UPT 5: upt5@yankes.com / upt123')
-    console.log('UPT 6: upt6@yankes.com / upt123')
+    console.log('UPT Puskeswan 1: upt1@yankes.com / upt123')
+    console.log('UPT Puskeswan 2: upt2@yankes.com / upt123')
+    console.log('UPT Puskeswan 3: upt3@yankes.com / upt123')
+    console.log('UPT Puskeswan 4: upt4@yankes.com / upt123')
+    console.log('UPT Puskeswan 5: upt5@yankes.com / upt123')
+    console.log('UPT Puskeswan 6: upt6@yankes.com / upt123')
     
   } catch (error) {
     console.error('Setup failed:', error)

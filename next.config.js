@@ -8,15 +8,10 @@ const nextConfig = {
   },
   // Disable static optimization for pages that use Supabase
   trailingSlash: false,
-  // Ensure proper handling of environment variables
-  webpack: (config, { isServer }) => {
-    if (isServer) {
-      config.externals.push('@supabase/ssr')
-    }
-    return config
-  },
   // Add output configuration for Vercel
-  output: 'standalone'
+  output: 'standalone',
+  // Turbopack configuration
+  turbopack: {}
 }
 
 module.exports = nextConfig
