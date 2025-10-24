@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/components/AuthProvider'
 import { supabase, Medicine, MedicineUsage, UPT } from '@/lib/supabase'
+import EditUPTModal from '@/components/EditUPTModal'
 import { 
   Package, 
   Users, 
@@ -43,6 +44,8 @@ export default function DinasDashboard() {
   })
   const [filteredUsage, setFilteredUsage] = useState<MedicineUsage[]>([])
   const [showFilters, setShowFilters] = useState(false)
+  const [showEditUPTModal, setShowEditUPTModal] = useState(false)
+  const [selectedUPT, setSelectedUPT] = useState<UPT | null>(null)
 
   useEffect(() => {
     fetchData()
@@ -214,6 +217,15 @@ export default function DinasDashboard() {
   const totalStock = medicines.reduce((sum, med) => sum + med.stock_current, 0)
   const lowStockMedicines = medicines.filter(med => med.stock_current < 50)
   const totalUsage = medicineUsage.reduce((sum, usage) => sum + usage.quantity_used, 0)
+
+  const handleEditUPT = (upt: UPT) => {
+    setSelectedUPT(upt)
+    setShowEditUPTModal(true)
+  }
+
+  const handleUPTEditSuccess = () => {
+    fetchData() // Refresh data after edit
+  }
 
   if (loading) {
     return (
@@ -653,8 +665,17 @@ export default function DinasDashboard() {
             <h3 className="text-lg font-medium text-gray-900 mb-6">Daftar UPT Puskeswan</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {upts.map((upt) => (
-                <div key={upt.id} className="p-4 border border-gray-200 rounded-lg">
-                  <h4 className="font-medium text-gray-900">{upt.name}</h4>
+                <div key={upt.id} className="p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
+                  <div className="flex justify-between items-start mb-2">
+                    <h4 className="font-medium text-gray-900">{upt.name}</h4>
+                    <button
+                      onClick={() => handleEditUPT(upt)}
+                      className="p-1 hover:bg-gray-100 rounded transition-colors"
+                      title="Edit UPT"
+                    >
+                      <Edit className="h-4 w-4 text-gray-500 hover:text-blue-600" />
+                    </button>
+                  </div>
                   <p className="text-sm text-gray-600 mt-1">{upt.address}</p>
                   <p className="text-sm text-gray-500 mt-1">{upt.phone}</p>
                 </div>
@@ -731,6 +752,14 @@ export default function DinasDashboard() {
           onAdd={handleAddMedicine}
         />
       )}
+
+      {/* Edit UPT Modal */}
+      <EditUPTModal
+        isOpen={showEditUPTModal}
+        onClose={() => setShowEditUPTModal(false)}
+        onSuccess={handleUPTEditSuccess}
+        upt={selectedUPT}
+      />
 
     </div>
   )
