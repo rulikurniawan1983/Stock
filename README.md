@@ -7,8 +7,8 @@ Aplikasi web untuk manajemen stock obat hewan yang digunakan oleh Dinas Peternak
 ### Dashboard Dinas
 - **Overview**: Statistik total obat, stock, dan penggunaan
 - **Manajemen Obat**: Tambah, lihat, dan kelola daftar obat
-- **Monitoring Penggunaan**: Pantau penggunaan obat oleh UPT
-- **Manajemen UPT**: Daftar 6 UPT Puskeswan
+- **Monitoring Penggunaan**: Pantau penggunaan obat oleh UPT dengan **Export Excel**
+- **Manajemen UPT**: Daftar 6 UPT Puskeswan dengan **Edit UPT** functionality
 - **Pelayanan Lapangan**: Lihat semua pelayanan lapangan hewan
 - **Pelayanan Klinik Hewan**: Pantau pelayanan klinik hewan dari semua UPT
 
@@ -22,9 +22,11 @@ Aplikasi web untuk manajemen stock obat hewan yang digunakan oleh Dinas Peternak
   - Jenis hewan yang diobati
   - Tanggal penggunaan
   - Catatan tambahan
+  - **Export Excel**: Export riwayat penggunaan obat ke Excel
+  - **Import Excel**: Import data penggunaan obat dari Excel
 - **Form Terpadu (Rekomended)**: Form gabungan pelayanan lapangan dan pelayanan klinik hewan
-- **Pelayanan Lapangan**: Form pencatatan pelayanan lapangan hewan (legacy)
-- **Pelayanan Klinik Hewan**: Form pelayanan klinik hewan dengan anamnesis lengkap (legacy)
+- **Pelayanan Lapangan**: Form pencatatan pelayanan lapangan hewan dengan **Export Excel**
+- **Pelayanan Klinik Hewan**: Form pelayanan klinik hewan dengan anamnesis lengkap dan **Export Excel**
 
 ### Fitur Pelayanan Klinik Hewan
 - **Data Pemilik Hewan**: Nama, telepon, alamat, desa, kecamatan
@@ -43,6 +45,21 @@ Aplikasi web untuk manajemen stock obat hewan yang digunakan oleh Dinas Peternak
 - **Pengobatan**: Jenis pengobatan, dosis per ekor, petugas, status hewan
 - **Penggunaan Obat**: Multiple obat dengan dosis, cara pemberian, catatan
 - **Integrasi Database**: Menyimpan ke 5 tabel sekaligus (animal_owners, animals, medical_records, health_services, health_service_medicines)
+- **Dropdown Kecamatan & Desa**: Pilihan kecamatan dan desa untuk Kabupaten Bogor
+
+### 📊 Fitur Excel Export & Import
+- **Export Riwayat Penggunaan Obat**: Export data penggunaan obat ke Excel dengan format yang rapi
+- **Export Pelayanan Lapangan**: Export data pelayanan lapangan ke Excel
+- **Export Pelayanan Klinik Hewan**: Export data pelayanan klinik hewan ke Excel
+- **Import Penggunaan Obat**: Import data penggunaan obat dari Excel dengan template
+- **Template Excel**: Download template Excel untuk import data
+- **Validasi Data**: Validasi data Excel sebelum import ke database
+
+### ✏️ Fitur Edit UPT Puskeswan
+- **Edit Informasi UPT**: Edit nama, alamat, dan telepon UPT
+- **Update Database**: Update informasi UPT di database secara real-time
+- **Modal Interface**: Interface modal yang user-friendly
+- **Validasi Form**: Validasi input sebelum update
 
 ### Fitur Pelayanan Lapangan (Legacy)
 - **Data Pemilik**: Nama, alamat desa, alamat kecamatan
@@ -62,6 +79,8 @@ Aplikasi web untuk manajemen stock obat hewan yang digunakan oleh Dinas Peternak
 - **Icons**: Lucide React
 - **Charts**: Recharts
 - **Date Handling**: date-fns
+- **Excel Processing**: ExcelJS (secure Excel file handling)
+- **File Operations**: file-saver
 - **Deployment**: Vercel
 - **Version Control**: GitHub
 
@@ -270,6 +289,24 @@ Aplikasi dilengkapi dengan data sampel yang lengkap:
 
 Distributed under the MIT License. See `LICENSE` for more information.
 
+## 🔧 Troubleshooting
+
+### Database Schema Issues
+Jika mengalami error seperti "column does not exist" saat menjalankan schema.sql:
+1. Pastikan menjalankan script penambahan kolom terlebih dahulu
+2. Index akan dibuat otomatis setelah kolom ada
+3. Script sudah dioptimasi untuk backward compatibility
+
+### Excel Import/Export Issues
+- Pastikan file Excel menggunakan format yang benar
+- Download template Excel untuk import data
+- File Excel harus dalam format .xlsx
+
+### Deployment Issues
+- Pastikan environment variables sudah di-set dengan benar
+- Cek konfigurasi Supabase di Vercel
+- Pastikan database schema sudah dijalankan
+
 ## 📞 Support
 
 Untuk pertanyaan atau dukungan, silakan hubungi:
@@ -277,6 +314,14 @@ Untuk pertanyaan atau dukungan, silakan hubungi:
 - GitHub Issues: [Create an issue](https://github.com/your-repo/issues)
 
 ## 🔄 Changelog
+
+### v2.2.0
+- ✅ **Excel Export Features** - Export riwayat penggunaan obat, pelayanan lapangan, dan pelayanan klinik hewan
+- ✅ **Edit UPT Puskeswan** - Fitur edit informasi UPT di dashboard Dinas
+- ✅ **Dropdown Kecamatan & Desa** - Pilihan kecamatan dan desa untuk Kabupaten Bogor
+- ✅ **Enhanced Database Schema** - Perbaikan schema database dengan backward compatibility
+- ✅ **Index Optimization** - Perbaikan urutan pembuatan index untuk mencegah error
+- ✅ **Comprehensive Error Handling** - Penanganan error yang lebih baik untuk semua fitur
 
 ### v2.1.0
 - ✅ **Form Terpadu Pelayanan Lapangan & Pelayanan Klinik Hewan** - Form gabungan yang efisien
