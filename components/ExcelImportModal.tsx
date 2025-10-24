@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import { X, Upload, FileSpreadsheet, AlertCircle, CheckCircle } from 'lucide-react'
-import * as XLSX from 'xlsx'
+import * as ExcelJS from 'exceljs'
 
 interface ExcelImportModalProps {
   isOpen: boolean
@@ -41,22 +41,50 @@ export default function ExcelImportModal({ isOpen, onClose, onSuccess, uptId }: 
   const parseExcelFile = (file: File): Promise<ImportData[]> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader()
-      reader.onload = (e) => {
+      reader.onload = async (e) => {
         try {
-          const data = e.target?.result
-          const workbook = XLSX.read(data, { type: 'binary' })
-          const sheetName = workbook.SheetNames[0]
-          const worksheet = workbook.Sheets[sheetName]
-          const jsonData = XLSX.utils.sheet_to_json(worksheet)
+          const data = e.target?.result as ArrayBuffer
+          const workbook = new ExcelJS.Workbook()
+          await workbook.xlsx.load(data)
+          
+          const worksheet = workbook.worksheets[0]
+          if (!worksheet) {
+            throw new Error('No worksheet found')
+          }
 
-          const parsedData: ImportData[] = jsonData.map((row: any) => ({
-            nama_obat: row['Nama Obat'] || row['nama_obat'] || '',
-            jumlah_digunakan: parseInt(row['Jumlah Digunakan'] || row['jumlah_digunakan'] || '0'),
-            penyakit_diobati: row['Penyakit Diobati'] || row['penyakit_diobati'] || '',
-            jenis_hewan: row['Jenis Hewan'] || row['jenis_hewan'] || '',
-            tanggal_penggunaan: row['Tanggal Penggunaan'] || row['tanggal_penggunaan'] || '',
-            catatan: row['Catatan'] || row['catatan'] || ''
-          }))
+          const parsedData: ImportData[] = []
+          const headerRow = worksheet.getRow(1)
+          const headers: string[] = []
+          
+          // Get headers
+          headerRow.eachCell((cell, colNumber) => {
+            headers[colNumber] = cell.value?.toString() || ''
+          })
+
+          // Parse data rows
+          worksheet.eachRow((row, rowNumber) => {
+            if (rowNumber === 1) return // Skip header row
+            
+            const rowData: any = {}
+            row.eachCell((cell, colNumber) => {
+              const header = headers[colNumber]
+              if (header) {
+                rowData[header] = cell.value?.toString() || ''
+              }
+            })
+
+            // Map to our data structure
+            const importRow: ImportData = {
+              nama_obat: rowData['Nama Obat'] || rowData['nama_obat'] || '',
+              jumlah_digunakan: parseInt(rowData['Jumlah Digunakan'] || rowData['jumlah_digunakan'] || '0'),
+              penyakit_diobati: rowData['Penyakit Diobati'] || rowData['penyakit_diobati'] || '',
+              jenis_hewan: rowData['Jenis Hewan'] || rowData['jenis_hewan'] || '',
+              tanggal_penggunaan: rowData['Tanggal Penggunaan'] || rowData['tanggal_penggunaan'] || '',
+              catatan: rowData['Catatan'] || rowData['catatan'] || ''
+            }
+
+            parsedData.push(importRow)
+          })
 
           resolve(parsedData)
         } catch (error) {
@@ -64,7 +92,7 @@ export default function ExcelImportModal({ isOpen, onClose, onSuccess, uptId }: 
         }
       }
       reader.onerror = () => reject(new Error('Error reading file'))
-      reader.readAsBinaryString(file)
+      reader.readAsArrayBuffer(file)
     })
   }
 
@@ -176,23 +204,61 @@ export default function ExcelImportModal({ isOpen, onClose, onSuccess, uptId }: 
     }
   }
 
-  const downloadTemplate = () => {
-    const templateData = [
-      {
-        'Nama Obat': 'Amoxicillin',
-        'Jumlah Digunakan': 10,
-        'Penyakit Diobati': 'Infeksi saluran pernapasan',
-        'Jenis Hewan': 'Sapi',
-        'Tanggal Penggunaan': '2024-01-15',
-        'Catatan': 'Pengobatan rutin'
-      }
-    ]
+  const downloadTemplate = async () => {
+    try {
+      const workbook = new ExcelJS.Workbook()
+      const worksheet = workbook.addWorksheet('Template')
+      
+      // Add headers
+      worksheet.columns = [
+        { header: 'Nama Obat', key: 'nama_obat', width: 20 },
+        { header: 'Jumlah Digunakan', key: 'jumlah_digunakan', width: 15 },
+        { header: 'Penyakit Diobati', key: 'penyakit_diobati', width: 25 },
+        { header: 'Jenis Hewan', key: 'jenis_hewan', width: 15 },
+        { header: 'Tanggal Penggunaan', key: 'tanggal_penggunaan', width: 18 },
+        { header: 'Catatan', key: 'catatan', width: 20 }
+      ]
 
-    const worksheet = XLSX.utils.json_to_sheet(templateData)
-    const workbook = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Template')
-    
-    XLSX.writeFile(workbook, 'template_penggunaan_obat.xlsx')
+      // Style headers
+      worksheet.getRow(1).font = { bold: true }
+      worksheet.getRow(1).fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFE6E6FA' }
+      }
+
+      // Add sample data
+      worksheet.addRow({
+        nama_obat: 'Amoxicillin',
+        jumlah_digunakan: 10,
+        penyakit_diobati: 'Infeksi saluran pernapasan',
+        jenis_hewan: 'Sapi',
+        tanggal_penggunaan: '2024-01-15',
+        catatan: 'Pengobatan rutin'
+      })
+
+      // Auto-fit columns
+      worksheet.columns.forEach(column => {
+        if (column.width) {
+          column.width = Math.max(column.width || 0, 10)
+        }
+      })
+
+      // Generate buffer and download
+      const buffer = await workbook.xlsx.writeBuffer()
+      const blob = new Blob([buffer], { 
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+      })
+      
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = 'template_penggunaan_obat.xlsx'
+      link.click()
+      window.URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('Error creating template:', error)
+    }
   }
 
   if (!isOpen) return null
