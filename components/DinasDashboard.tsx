@@ -306,7 +306,7 @@ export default function DinasDashboard() {
                 <Stethoscope className="h-6 w-6 text-purple-600" />
               </div>
               <div className="ml-4 flex-1">
-                <p className="text-sm font-medium text-gray-600">Kesehatan Hewan</p>
+                <p className="text-sm font-medium text-gray-600">Pelayanan Hewan</p>
                 <p className="text-lg font-bold text-purple-600">Lihat Semua</p>
               </div>
               <button
@@ -340,7 +340,7 @@ export default function DinasDashboard() {
                     className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                   >
                     <Stethoscope className="h-4 w-4" />
-                    Rekam Medis Hewan
+                    Pelayanan Lapangan
                   </button>
                   <button
                     onClick={() => {
@@ -379,7 +379,7 @@ export default function DinasDashboard() {
                 { id: 'medicines', name: 'Daftar Obat' },
                 { id: 'usage', name: 'Penggunaan Obat' },
                 { id: 'upts', name: 'UPT Puskeswan' },
-                { id: 'medical', name: 'Kesehatan Hewan' }
+                { id: 'medical', name: 'Pelayanan Hewan' }
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -665,30 +665,30 @@ export default function DinasDashboard() {
 
         {activeTab === 'medical' && (
           <div className="space-y-6">
-            {/* Rekam Medis Section */}
+            {/* Pelayanan Lapangan Section */}
             <div className="card">
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-medium text-gray-900">Rekam Medis Hewan</h3>
+                <h3 className="text-lg font-medium text-gray-900">Pelayanan Lapangan</h3>
                 <button
                   onClick={() => router.push('/rekam-medis/daftar')}
                   className="btn-primary flex items-center gap-2"
                 >
                   <Stethoscope className="h-4 w-4" />
-                  Lihat Semua Rekam Medis
+                  Lihat Semua Pelayanan Lapangan
                 </button>
               </div>
               
               <div className="text-center py-8">
                 <Stethoscope className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h4 className="text-lg font-medium text-gray-900 mb-2">Rekam Medis Hewan</h4>
+                <h4 className="text-lg font-medium text-gray-900 mb-2">Pelayanan Lapangan</h4>
                 <p className="text-gray-600 mb-4">
-                  Pantau semua rekam medis hewan dari seluruh UPT Puskeswan. Lihat gejala klinis, pengobatan yang diberikan, dan status kesehatan hewan.
+                  Pantau semua pelayanan lapangan dari seluruh UPT Puskeswan. Lihat gejala klinis, pengobatan yang diberikan, dan status kesehatan hewan.
                 </p>
                 <button
                   onClick={() => router.push('/rekam-medis/daftar')}
                   className="btn-primary"
                 >
-                  Lihat Semua Rekam Medis
+                  Lihat Semua Pelayanan Lapangan
                 </button>
               </div>
             </div>
@@ -696,7 +696,7 @@ export default function DinasDashboard() {
             {/* Pelayanan Kesehatan Section */}
             <div className="card">
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-medium text-gray-900">Pelayanan Kesehatan Hewan</h3>
+                <h3 className="text-lg font-medium text-gray-900">Pelayanan Klinik Hewan</h3>
                 <button
                   onClick={() => router.push('/pelayanan-kesehatan/daftar')}
                   className="btn-primary flex items-center gap-2"
@@ -708,7 +708,7 @@ export default function DinasDashboard() {
               
               <div className="text-center py-8">
                 <Heart className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h4 className="text-lg font-medium text-gray-900 mb-2">Pelayanan Kesehatan Hewan</h4>
+                <h4 className="text-lg font-medium text-gray-900 mb-2">Pelayanan Klinik Hewan</h4>
                 <p className="text-gray-600 mb-4">
                   Pantau semua pelayanan kesehatan hewan dari seluruh UPT Puskeswan. Lihat anamnesis, diagnosis, pengobatan, dan penggunaan obat.
                 </p>

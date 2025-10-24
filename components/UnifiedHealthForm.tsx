@@ -282,10 +282,10 @@ export default function UnifiedHealthForm() {
         <div className="px-6 py-4 border-b border-gray-200">
           <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             <Heart className="w-6 h-6 text-red-500" />
-            Form Terpadu Rekam Medis & Pelayanan Kesehatan Hewan
+            Form Terpadu Pelayanan Lapangan & Pelayanan Klinik Hewan
           </h2>
           <p className="text-gray-600 mt-1">
-            Form lengkap untuk rekam medis dan pelayanan kesehatan hewan
+            Form lengkap untuk pelayanan lapangan dan pelayanan klinik hewan
           </p>
         </div>
 
@@ -488,11 +488,11 @@ export default function UnifiedHealthForm() {
             </div>
           </div>
 
-          {/* Pelayanan Kesehatan */}
+          {/* Pelayanan Klinik Hewan */}
           <div className="bg-purple-50 p-4 rounded-lg">
             <h3 className="text-lg font-semibold text-purple-900 mb-4 flex items-center gap-2">
               <Stethoscope className="w-5 h-5" />
-              Pelayanan Kesehatan
+              Pelayanan Klinik Hewan
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>

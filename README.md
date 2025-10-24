@@ -9,8 +9,8 @@ Aplikasi web untuk manajemen stock obat hewan yang digunakan oleh Dinas Peternak
 - **Manajemen Obat**: Tambah, lihat, dan kelola daftar obat
 - **Monitoring Penggunaan**: Pantau penggunaan obat oleh UPT
 - **Manajemen UPT**: Daftar 6 UPT Puskeswan
-- **Rekam Medis**: Lihat semua rekam medis hewan
-- **Pelayanan Kesehatan**: Pantau pelayanan kesehatan dari semua UPT
+- **Pelayanan Lapangan**: Lihat semua pelayanan lapangan hewan
+- **Pelayanan Klinik Hewan**: Pantau pelayanan klinik hewan dari semua UPT
 
 ### Dashboard UPT Puskeswan
 - **Overview**: Statistik obat tersedia dan penggunaan
@@ -22,11 +22,11 @@ Aplikasi web untuk manajemen stock obat hewan yang digunakan oleh Dinas Peternak
   - Jenis hewan yang diobati
   - Tanggal penggunaan
   - Catatan tambahan
-- **Form Terpadu (Rekomended)**: Form gabungan rekam medis dan pelayanan kesehatan
-- **Rekam Medis**: Form pencatatan rekam medis hewan (legacy)
-- **Pelayanan Kesehatan**: Form pelayanan kesehatan hewan dengan anamnesis lengkap (legacy)
+- **Form Terpadu (Rekomended)**: Form gabungan pelayanan lapangan dan pelayanan klinik hewan
+- **Pelayanan Lapangan**: Form pencatatan pelayanan lapangan hewan (legacy)
+- **Pelayanan Klinik Hewan**: Form pelayanan klinik hewan dengan anamnesis lengkap (legacy)
 
-### Fitur Pelayanan Kesehatan Hewan
+### Fitur Pelayanan Klinik Hewan
 - **Data Pemilik Hewan**: Nama, telepon, alamat, desa, kecamatan
 - **Data Hewan**: Nama, jenis, ras, usia, jenis kelamin, berat, warna
 - **Anamnesis Lengkap**: Keluhan utama, anamnesis, pemeriksaan fisik
@@ -34,17 +34,17 @@ Aplikasi web untuk manajemen stock obat hewan yang digunakan oleh Dinas Peternak
 - **Penggunaan Obat**: Multiple obat dengan dosis, cara pemberian, catatan
 - **Status Pelayanan**: Selesai, rawat jalan, rawat inap, rujukan
 
-### 🆕 Form Terpadu Rekam Medis & Pelayanan Kesehatan
+### 🆕 Form Terpadu Pelayanan Lapangan & Pelayanan Klinik Hewan
 - **Informasi Umum**: Bulan, tanggal, nama pemilik, alamat desa & kecamatan
 - **Informasi Hewan**: Nama, jenis, ras, usia, jenis kelamin, berat, warna
 - **Jenis Ternak**: Kuantitas per jenis (Sapi, Kerbau, Kambing, Domba, Kucing, Kelinci, Ayam, Anjing, Lainnya)
 - **Gejala Klinis**: 25+ gejala dengan checkbox (Scabies, Helmintiasis, ORF, Bloat, CRD/Snot, dll.)
-- **Pelayanan Kesehatan**: Jenis pelayanan, keluhan, anamnesis, pemeriksaan fisik, diagnosis, rencana pengobatan
+- **Pelayanan Klinik Hewan**: Jenis pelayanan, keluhan, anamnesis, pemeriksaan fisik, diagnosis, rencana pengobatan
 - **Pengobatan**: Jenis pengobatan, dosis per ekor, petugas, status hewan
 - **Penggunaan Obat**: Multiple obat dengan dosis, cara pemberian, catatan
 - **Integrasi Database**: Menyimpan ke 5 tabel sekaligus (animal_owners, animals, medical_records, health_services, health_service_medicines)
 
-### Fitur Rekam Medis Hewan (Legacy)
+### Fitur Pelayanan Lapangan (Legacy)
 - **Data Pemilik**: Nama, alamat desa, alamat kecamatan
 - **Data Hewan**: Jenis ternak, total hewan
 - **Gejala Klinis**: Multiple gejala yang dapat dipilih
@@ -279,7 +279,7 @@ Untuk pertanyaan atau dukungan, silakan hubungi:
 ## 🔄 Changelog
 
 ### v2.1.0
-- ✅ **Form Terpadu Rekam Medis & Pelayanan Kesehatan** - Form gabungan yang efisien
+- ✅ **Form Terpadu Pelayanan Lapangan & Pelayanan Klinik Hewan** - Form gabungan yang efisien
 - ✅ **Excel Import untuk Penggunaan Obat** - Import data bulk dengan template
 - ✅ **Security Fix** - Mengganti xlsx dengan exceljs untuk keamanan
 - ✅ **Enhanced Navigation** - Form terpadu sebagai opsi rekomended
@@ -289,8 +289,8 @@ Untuk pertanyaan atau dukungan, silakan hubungi:
 - ✅ **Color-coded Sections** - Interface yang lebih user-friendly
 
 ### v2.0.0
-- ✅ Fitur Pelayanan Kesehatan Hewan
-- ✅ Fitur Rekam Medis Hewan
+- ✅ Fitur Pelayanan Klinik Hewan
+- ✅ Fitur Pelayanan Lapangan
 - ✅ Data sampel lengkap (20 obat, 6 hewan, 6 pelayanan)
 - ✅ 6 UPT Puskeswan
 - ✅ Navigasi dan logout yang konsisten

@@ -189,7 +189,7 @@ export default function UPTDashboard() {
                 <Stethoscope className="h-6 w-6 text-purple-600" />
               </div>
               <div className="ml-4 flex-1">
-                <p className="text-sm font-medium text-gray-600">Kesehatan Hewan</p>
+                <p className="text-sm font-medium text-gray-600">Pelayanan Hewan</p>
                 <p className="text-lg font-bold text-purple-600">Tambah Baru</p>
               </div>
               <button
@@ -223,7 +223,7 @@ export default function UPTDashboard() {
                     className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                   >
                     <Stethoscope className="h-4 w-4" />
-                    Tambah Rekam Medis
+                    Tambah Pelayanan Lapangan
                   </button>
                   <button
                     onClick={() => {
@@ -233,7 +233,7 @@ export default function UPTDashboard() {
                     className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                   >
                     <Heart className="h-4 w-4" />
-                    Tambah Pelayanan Kesehatan
+                    Tambah Pelayanan Klinik Hewan
                   </button>
                 </div>
               </div>
