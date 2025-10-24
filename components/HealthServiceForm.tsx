@@ -63,6 +63,11 @@ export default function HealthServiceForm() {
 
   const fetchMedicines = async () => {
     try {
+      if (!supabase) {
+        console.error('Supabase client not initialized')
+        return
+      }
+
       const { data, error } = await supabase
         .from('medicines')
         .select('*')
@@ -98,6 +103,11 @@ export default function HealthServiceForm() {
   const onSubmit = async (data: HealthServiceFormData) => {
     setIsSubmitting(true)
     try {
+      if (!supabase) {
+        console.error('Supabase client not initialized')
+        return
+      }
+
       // 1. Create or find animal owner
       let ownerId: string
       const { data: existingOwner } = await supabase

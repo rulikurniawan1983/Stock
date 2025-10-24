@@ -30,6 +30,12 @@ export default function UPTDashboard() {
 
   const fetchData = async () => {
     try {
+      if (!supabase) {
+        console.error('Supabase client not initialized')
+        setLoading(false)
+        return
+      }
+
       const [medicinesRes, usageRes] = await Promise.all([
         supabase.from('medicines').select('*').order('name'),
         supabase.from('medicine_usage')
@@ -52,6 +58,11 @@ export default function UPTDashboard() {
 
   const handleAddUsage = async (usageData: any) => {
     try {
+      if (!supabase) {
+        console.error('Supabase client not initialized')
+        return
+      }
+
       const { data, error } = await supabase
         .from('medicine_usage')
         .insert([{

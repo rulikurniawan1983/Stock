@@ -28,6 +28,11 @@ export default function DaftarPelayananKesehatanPage() {
 
   const fetchServices = async () => {
     try {
+      if (!supabase) {
+        console.error('Supabase client not initialized')
+        return
+      }
+
       let query = supabase
         .from('health_services')
         .select(`

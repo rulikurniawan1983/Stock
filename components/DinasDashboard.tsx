@@ -33,6 +33,12 @@ export default function DinasDashboard() {
 
   const fetchData = async () => {
     try {
+      if (!supabase) {
+        console.error('Supabase client not initialized')
+        setLoading(false)
+        return
+      }
+
       const [medicinesRes, usageRes, uptsRes] = await Promise.all([
         supabase.from('medicines').select('*').order('created_at', { ascending: false }),
         supabase.from('medicine_usage').select(`
@@ -55,6 +61,11 @@ export default function DinasDashboard() {
 
   const handleAddMedicine = async (medicineData: any) => {
     try {
+      if (!supabase) {
+        console.error('Supabase client not initialized')
+        return
+      }
+
       const { data, error } = await supabase
         .from('medicines')
         .insert([medicineData])

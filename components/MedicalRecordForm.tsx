@@ -75,6 +75,11 @@ export default function MedicalRecordForm() {
   const onSubmit = async (data: MedicalRecordFormData) => {
     setIsSubmitting(true)
     try {
+      if (!supabase) {
+        console.error('Supabase client not initialized')
+        return
+      }
+
       // Calculate total animals
       const totalAnimals = data.sapi + data.kerbau + data.kambing + data.domba + 
                           data.kucing + data.kelinci + data.ayam + data.anjing + data.lainnya

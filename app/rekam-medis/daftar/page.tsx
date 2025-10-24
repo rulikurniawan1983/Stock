@@ -45,6 +45,11 @@ export default function DaftarRekamMedisPage() {
 
   const fetchRecords = async () => {
     try {
+      if (!supabase) {
+        console.error('Supabase client not initialized')
+        return
+      }
+
       const { data, error } = await supabase
         .from('medical_records')
         .select('*')
