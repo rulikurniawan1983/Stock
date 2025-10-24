@@ -89,7 +89,7 @@ CREATE TABLE IF NOT EXISTS stock_transactions (
 CREATE INDEX IF NOT EXISTS idx_medicine_usage_upt_id ON medicine_usage(upt_id);
 CREATE INDEX IF NOT EXISTS idx_medicine_usage_medicine_id ON medicine_usage(medicine_id);
 CREATE INDEX IF NOT EXISTS idx_medicine_usage_date ON medicine_usage(usage_date);
-CREATE INDEX IF NOT EXISTS idx_medicine_usage_veterinarian ON medicine_usage(veterinarian_name);
+-- Index for veterinarian_name will be created after column addition
 CREATE INDEX IF NOT EXISTS idx_stock_transactions_upt_id ON stock_transactions(upt_id);
 CREATE INDEX IF NOT EXISTS idx_stock_transactions_medicine_id ON stock_transactions(medicine_id);
 CREATE INDEX IF NOT EXISTS idx_stock_transactions_type ON stock_transactions(transaction_type);
@@ -619,6 +619,9 @@ BEGIN
         ALTER TABLE users ADD COLUMN updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
     END IF;
 END $$;
+
+-- Create index for veterinarian_name after column addition
+CREATE INDEX IF NOT EXISTS idx_medicine_usage_veterinarian ON medicine_usage(veterinarian_name);
 
 -- Create indexes for medical_records
 CREATE INDEX IF NOT EXISTS idx_medical_records_tanggal ON medical_records(tanggal);
