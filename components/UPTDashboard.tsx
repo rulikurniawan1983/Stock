@@ -399,10 +399,10 @@ export default function UPTDashboard() {
 
         {activeTab === 'medical' && (
           <div className="space-y-6">
-            {/* Rekam Medis Section */}
+            {/* Pelayanan Lapangan Section */}
             <div className="card">
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-medium text-gray-900">Rekam Medis Hewan</h3>
+                <h3 className="text-lg font-medium text-gray-900">Pelayanan Lapangan</h3>
                 <div className="flex space-x-3">
                   <button
                     onClick={() => router.push('/rekam-medis/daftar')}
@@ -416,14 +416,14 @@ export default function UPTDashboard() {
                     className="btn-primary flex items-center gap-2"
                   >
                     <Stethoscope className="h-4 w-4" />
-                    Tambah Rekam Medis
+                    Tambah Pelayanan Lapangan
                   </button>
                 </div>
               </div>
               
               <div className="text-center py-8">
                 <Stethoscope className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h4 className="text-lg font-medium text-gray-900 mb-2">Rekam Medis Hewan</h4>
+                <h4 className="text-lg font-medium text-gray-900 mb-2">Pelayanan Lapangan</h4>
                 <p className="text-gray-600 mb-4">
                   Catat rekam medis hewan dengan lengkap termasuk gejala klinis, pengobatan, dan informasi pemilik
                 </p>
@@ -431,15 +431,15 @@ export default function UPTDashboard() {
                   onClick={() => router.push('/rekam-medis')}
                   className="btn-primary"
                 >
-                  Mulai Rekam Medis
+                  Mulai Pelayanan Lapangan
                 </button>
               </div>
             </div>
 
-            {/* Pelayanan Kesehatan Section */}
+            {/* Pelayanan Klinik Hewan Section */}
             <div className="card">
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-medium text-gray-900">Pelayanan Kesehatan Hewan</h3>
+                <h3 className="text-lg font-medium text-gray-900">Pelayanan Klinik Hewan</h3>
                 <div className="flex space-x-3">
                   <button
                     onClick={() => router.push('/pelayanan-kesehatan/daftar')}
@@ -460,7 +460,7 @@ export default function UPTDashboard() {
               
               <div className="text-center py-8">
                 <Heart className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h4 className="text-lg font-medium text-gray-900 mb-2">Pelayanan Kesehatan Hewan</h4>
+                <h4 className="text-lg font-medium text-gray-900 mb-2">Pelayanan Klinik Hewan</h4>
                 <p className="text-gray-600 mb-4">
                   Catat pelayanan kesehatan hewan dengan lengkap termasuk anamnesis, pemeriksaan fisik, diagnosis, dan penggunaan obat
                 </p>
@@ -468,7 +468,7 @@ export default function UPTDashboard() {
                   onClick={() => router.push('/pelayanan-kesehatan')}
                   className="btn-primary"
                 >
-                  Mulai Pelayanan Kesehatan
+                  Mulai Pelayanan Klinik Hewan
                 </button>
               </div>
             </div>
