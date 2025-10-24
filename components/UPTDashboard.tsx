@@ -283,13 +283,26 @@ export default function UPTDashboard() {
         .from('health_services')
         .select(`
           *,
-          animals(name, species, breed),
-          animal_owners(name, phone)
+          animals(
+            name, 
+            species, 
+            breed,
+            animal_owners(
+              name, 
+              phone
+            )
+          )
         `)
         .eq('upt_id', user?.upt_id)
         .order('service_date', { ascending: false })
 
       if (error) throw error
+
+      // Check if data exists
+      if (!healthServices || healthServices.length === 0) {
+        alert('Tidak ada data pelayanan klinik hewan untuk diexport.')
+        return
+      }
 
       const workbook = new ExcelJS.Workbook()
       const worksheet = workbook.addWorksheet('Pelayanan Klinik Hewan')
@@ -329,8 +342,8 @@ export default function UPTDashboard() {
           animal_name: service.animals?.name || '',
           animal_species: service.animals?.species || '',
           animal_breed: service.animals?.breed || '',
-          owner_name: service.animal_owners?.name || '',
-          owner_phone: service.animal_owners?.phone || '',
+          owner_name: service.animals?.animal_owners?.name || '',
+          owner_phone: service.animals?.animal_owners?.phone || '',
           chief_complaint: service.chief_complaint || '',
           anamnesis: service.anamnesis || '',
           physical_examination: service.physical_examination || '',
@@ -372,7 +385,11 @@ export default function UPTDashboard() {
 
     } catch (error) {
       console.error('Error exporting pelayanan klinik:', error)
-      alert('Gagal mengexport data pelayanan klinik hewan ke Excel. Silakan coba lagi.')
+      console.error('Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined
+      })
+      alert(`Gagal mengexport data pelayanan klinik hewan ke Excel. Error: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
