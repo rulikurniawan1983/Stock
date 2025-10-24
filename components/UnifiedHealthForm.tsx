@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form'
 import { supabase, AnimalOwner, Animal, Medicine, HealthService, MedicalRecord } from '@/lib/supabase'
 import { useAuth } from '@/components/AuthProvider'
 import { Plus, Trash2, Save, Calendar, User, Heart, Stethoscope, Package } from 'lucide-react'
+import { kecamatanBogor, getDesaByKecamatanId, type Kecamatan, type Desa } from '@/lib/bogor-data'
 
 interface UnifiedHealthFormData {
   // Informasi Umum (dari Medical Record)
@@ -105,11 +106,22 @@ export default function UnifiedHealthForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [medicines, setMedicines] = useState<Medicine[]>([])
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([])
+  const [selectedKecamatan, setSelectedKecamatan] = useState<string>('')
+  const [availableDesas, setAvailableDesas] = useState<Desa[]>([])
   const { user } = useAuth()
 
   useEffect(() => {
     fetchMedicines()
   }, [])
+
+  // Handler untuk perubahan kecamatan
+  const handleKecamatanChange = (kecamatanId: string) => {
+    setSelectedKecamatan(kecamatanId)
+    const desas = getDesaByKecamatanId(kecamatanId)
+    setAvailableDesas(desas)
+    // Reset desa yang dipilih
+    setValue('alamat_desa', '')
+  }
 
   const fetchMedicines = async () => {
     try {
@@ -137,13 +149,14 @@ export default function UnifiedHealthForm() {
       if (existingOwner) {
         ownerId = existingOwner.id
       } else {
+        const selectedKecamatanName = kecamatanBogor.find(k => k.id === selectedKecamatan)?.name || ''
         const { data: newOwner, error: ownerError } = await supabase
           .from('animal_owners')
           .insert([{
             name: data.pemilik,
             address: data.alamat_desa,
             village: data.alamat_desa,
-            district: data.alamat_kecamatan
+            district: selectedKecamatanName
           }])
           .select()
           .single()
@@ -171,6 +184,7 @@ export default function UnifiedHealthForm() {
       if (animalError) throw animalError
 
       // 3. Create medical record
+      const selectedKecamatanName = kecamatanBogor.find(k => k.id === selectedKecamatan)?.name || ''
       const { error: medicalError } = await supabase
         .from('medical_records')
         .insert([{
@@ -178,7 +192,7 @@ export default function UnifiedHealthForm() {
           tanggal: data.tanggal,
           pemilik: data.pemilik,
           alamat_desa: data.alamat_desa,
-          alamat_kecamatan: data.alamat_kecamatan,
+          alamat_kecamatan: selectedKecamatanName,
           jenis_ternak: {
             sapi: data.sapi,
             kerbau: data.kerbau,
@@ -327,24 +341,36 @@ export default function UnifiedHealthForm() {
                 {errors.pemilik && <p className="text-red-500 text-sm mt-1">{errors.pemilik.message}</p>}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Alamat Desa</label>
-                <input
-                  {...register('alamat_desa', { required: 'Alamat desa harus diisi' })}
-                  type="text"
+                <label className="block text-sm font-medium text-gray-700 mb-1">Kecamatan</label>
+                <select
+                  value={selectedKecamatan}
+                  onChange={(e) => handleKecamatanChange(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Nama desa"
-                />
-                {errors.alamat_desa && <p className="text-red-500 text-sm mt-1">{errors.alamat_desa.message}</p>}
+                  required
+                >
+                  <option value="">Pilih Kecamatan</option>
+                  {kecamatanBogor.map((kecamatan) => (
+                    <option key={kecamatan.id} value={kecamatan.id}>
+                      {kecamatan.name}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Alamat Kecamatan</label>
-                <input
-                  {...register('alamat_kecamatan', { required: 'Alamat kecamatan harus diisi' })}
-                  type="text"
+                <label className="block text-sm font-medium text-gray-700 mb-1">Desa</label>
+                <select
+                  {...register('alamat_desa', { required: 'Desa harus dipilih' })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Nama kecamatan"
-                />
-                {errors.alamat_kecamatan && <p className="text-red-500 text-sm mt-1">{errors.alamat_kecamatan.message}</p>}
+                  disabled={!selectedKecamatan}
+                >
+                  <option value="">Pilih Desa</option>
+                  {availableDesas.map((desa) => (
+                    <option key={desa.id} value={desa.name}>
+                      {desa.name}
+                    </option>
+                  ))}
+                </select>
+                {errors.alamat_desa && <p className="text-red-500 text-sm mt-1">{errors.alamat_desa.message}</p>}
               </div>
             </div>
           </div>
