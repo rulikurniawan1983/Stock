@@ -18,19 +18,13 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey)
 async function setupDatabase() {
   try {
     console.log('Setting up database schema...')
+    console.log('Note: Please run the SQL schema manually in your Supabase dashboard.')
+    console.log('The schema file is located at: supabase/schema.sql')
+    console.log('Copy and paste the contents into the SQL editor in your Supabase dashboard.')
+    console.log('')
     
-    // Read and execute schema
-    const schemaPath = path.join(__dirname, '../supabase/schema.sql')
-    const schema = fs.readFileSync(schemaPath, 'utf8')
-    
-    const { error } = await supabase.rpc('exec_sql', { sql: schema })
-    
-    if (error) {
-      console.error('Error setting up database:', error)
-      return
-    }
-    
-    console.log('Database schema setup completed!')
+    // Skip automatic schema setup for now
+    console.log('Skipping automatic schema setup...')
     
     // Create sample users
     console.log('Creating sample users...')
@@ -56,6 +50,41 @@ async function setupDatabase() {
     ]
     
     for (const user of sampleUsers) {
+      // Check if user already exists
+      const { data: existingUsers } = await supabase.auth.admin.listUsers()
+      const existingUser = existingUsers?.users?.find(u => u.email === user.email)
+      
+      if (existingUser) {
+        console.log(`User ${user.email} already exists, skipping creation`)
+        
+        // Check if profile exists in users table
+        const { data: existingProfile } = await supabase
+          .from('users')
+          .select('id')
+          .eq('id', existingUser.id)
+          .single()
+        
+        if (!existingProfile) {
+          // Create profile if it doesn't exist
+          const { error: profileError } = await supabase
+            .from('users')
+            .insert([{
+              id: existingUser.id,
+              email: user.email,
+              role: user.role,
+              upt_id: user.upt_id
+            }])
+          
+          if (profileError) {
+            console.error(`Error creating profile for existing user ${user.email}:`, profileError)
+          } else {
+            console.log(`Profile created for existing user ${user.email}`)
+          }
+        }
+        continue
+      }
+      
+      // Create new user
       const { data: authData, error: authError } = await supabase.auth.admin.createUser({
         email: user.email,
         password: user.password,
