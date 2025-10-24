@@ -10,7 +10,8 @@ import {
   LogOut,
   Calendar,
   FileText,
-  Stethoscope
+  Stethoscope,
+  Heart
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
@@ -104,20 +105,25 @@ export default function UPTDashboard() {
               <h1 className="text-3xl font-bold text-gray-900">Dashboard UPT</h1>
               <p className="text-gray-600">Manajemen Penggunaan Obat Hewan</p>
             </div>
-            <button
-              onClick={signOut}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
-            >
-              <LogOut className="h-5 w-5" />
-              Keluar
-            </button>
+            <div className="flex items-center space-x-4">
+              <div className="text-sm text-gray-500">
+                Logged in as: {user?.email}
+              </div>
+              <button
+                onClick={signOut}
+                className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <LogOut className="h-5 w-5" />
+                Logout
+              </button>
+            </div>
           </div>
         </div>
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
           <div className="card">
             <div className="flex items-center">
               <div className="p-2 bg-primary-100 rounded-lg">
@@ -165,6 +171,18 @@ export default function UPTDashboard() {
               </div>
             </div>
           </div>
+
+          <div className="card cursor-pointer hover:shadow-lg transition-shadow" onClick={() => router.push('/pelayanan-kesehatan')}>
+            <div className="flex items-center">
+              <div className="p-2 bg-pink-100 rounded-lg">
+                <Heart className="h-6 w-6 text-pink-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Pelayanan</p>
+                <p className="text-lg font-bold text-pink-600">Kesehatan</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Navigation Tabs */}
@@ -175,7 +193,8 @@ export default function UPTDashboard() {
                 { id: 'overview', name: 'Overview' },
                 { id: 'medicines', name: 'Daftar Obat' },
                 { id: 'usage', name: 'Penggunaan Obat' },
-                { id: 'medical', name: 'Rekam Medis' }
+                { id: 'medical', name: 'Rekam Medis' },
+                { id: 'health', name: 'Pelayanan Kesehatan' }
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -347,6 +366,44 @@ export default function UPTDashboard() {
                 className="btn-primary"
               >
                 Mulai Rekam Medis
+              </button>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'health' && (
+          <div className="card">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-lg font-medium text-gray-900">Pelayanan Kesehatan Hewan</h3>
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => router.push('/pelayanan-kesehatan/daftar')}
+                  className="btn-secondary flex items-center gap-2"
+                >
+                  <FileText className="h-4 w-4" />
+                  Lihat Semua
+                </button>
+                <button
+                  onClick={() => router.push('/pelayanan-kesehatan')}
+                  className="btn-primary flex items-center gap-2"
+                >
+                  <Heart className="h-4 w-4" />
+                  Tambah Pelayanan
+                </button>
+              </div>
+            </div>
+            
+            <div className="text-center py-12">
+              <Heart className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+              <h4 className="text-lg font-medium text-gray-900 mb-2">Pelayanan Kesehatan Hewan</h4>
+              <p className="text-gray-600 mb-6">
+                Catat pelayanan kesehatan hewan dengan lengkap termasuk anamnesis, pemeriksaan fisik, diagnosis, dan penggunaan obat
+              </p>
+              <button
+                onClick={() => router.push('/pelayanan-kesehatan')}
+                className="btn-primary"
+              >
+                Mulai Pelayanan Kesehatan
               </button>
             </div>
           </div>

@@ -1,13 +1,13 @@
 'use client'
 
 import { useAuth } from '@/components/AuthProvider'
-import MedicalRecordForm from '@/components/MedicalRecordForm'
+import HealthServiceForm from '@/components/HealthServiceForm'
 import PageHeader from '@/components/PageHeader'
 import Breadcrumb from '@/components/Breadcrumb'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 
-export default function RekamMedisPage() {
+export default function PelayananKesehatanPage() {
   const { user, loading } = useAuth()
   const router = useRouter()
 
@@ -30,21 +30,21 @@ export default function RekamMedisPage() {
   }
 
   const breadcrumbItems = [
-    { label: 'Rekam Medis', href: '/rekam-medis/daftar' },
-    { label: 'Tambah Rekam Medis' }
+    { label: 'Pelayanan Kesehatan', href: '/pelayanan-kesehatan/daftar' },
+    { label: 'Tambah Pelayanan' }
   ]
 
   return (
     <div className="min-h-screen bg-gray-50">
       <PageHeader
-        title="Rekam Medis Hewan"
-        subtitle={`Form pencatatan rekam medis hewan untuk ${user.role === 'dinas' ? 'Dinas Peternakan' : 'UPT Puskeswan'}`}
+        title="Pelayanan Kesehatan Hewan"
+        subtitle={`Form pelayanan kesehatan hewan untuk ${user.role === 'dinas' ? 'Dinas Peternakan' : 'UPT Puskeswan'}`}
         backUrl={user.role === 'dinas' ? '/dinas' : '/upt'}
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <Breadcrumb items={breadcrumbItems} />
-        <MedicalRecordForm />
+        <HealthServiceForm />
       </div>
     </div>
   )

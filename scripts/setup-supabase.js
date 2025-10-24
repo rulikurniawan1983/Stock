@@ -31,21 +31,45 @@ async function setupDatabase() {
     
     const sampleUsers = [
       {
-        email: 'admin@dinas.com',
+        email: 'admin@yankes.com',
         password: 'admin123',
         role: 'dinas'
       },
       {
-        email: 'upt1@puskeswan.com',
+        email: 'upt1@yankes.com',
         password: 'upt123',
         role: 'upt',
         upt_id: '11111111-1111-1111-1111-111111111111'
       },
       {
-        email: 'upt2@puskeswan.com',
+        email: 'upt2@yankes.com',
         password: 'upt123',
         role: 'upt',
         upt_id: '22222222-2222-2222-2222-222222222222'
+      },
+      {
+        email: 'upt3@yankes.com',
+        password: 'upt123',
+        role: 'upt',
+        upt_id: '33333333-3333-3333-3333-333333333333'
+      },
+      {
+        email: 'upt4@yankes.com',
+        password: 'upt123',
+        role: 'upt',
+        upt_id: '44444444-4444-4444-4444-444444444444'
+      },
+      {
+        email: 'upt5@yankes.com',
+        password: 'upt123',
+        role: 'upt',
+        upt_id: '55555555-5555-5555-5555-555555555555'
+      },
+      {
+        email: 'upt6@yankes.com',
+        password: 'upt123',
+        role: 'upt',
+        upt_id: '66666666-6666-6666-6666-666666666666'
       }
     ]
     
@@ -114,9 +138,13 @@ async function setupDatabase() {
     
     console.log('Setup completed!')
     console.log('\nSample accounts:')
-    console.log('Dinas Admin: admin@dinas.com / admin123')
-    console.log('UPT 1: upt1@puskeswan.com / upt123')
-    console.log('UPT 2: upt2@puskeswan.com / upt123')
+    console.log('Dinas Admin: admin@yankes.com / admin123')
+    console.log('UPT 1: upt1@yankes.com / upt123')
+    console.log('UPT 2: upt2@yankes.com / upt123')
+    console.log('UPT 3: upt3@yankes.com / upt123')
+    console.log('UPT 4: upt4@yankes.com / upt123')
+    console.log('UPT 5: upt5@yankes.com / upt123')
+    console.log('UPT 6: upt6@yankes.com / upt123')
     
   } catch (error) {
     console.error('Setup failed:', error)
