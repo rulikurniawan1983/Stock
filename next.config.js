@@ -14,7 +14,9 @@ const nextConfig = {
       config.externals.push('@supabase/ssr')
     }
     return config
-  }
+  },
+  // Add output configuration for Vercel
+  output: 'standalone'
 }
 
 module.exports = nextConfig

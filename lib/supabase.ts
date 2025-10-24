@@ -7,7 +7,20 @@ export const createSupabaseClient = () => {
 
   if (!supabaseUrl || !supabaseAnonKey) {
     console.warn('Supabase environment variables are not set')
-    return null
+    // Return a mock client for development
+    return {
+      auth: {
+        getSession: () => Promise.resolve({ data: { session: null }, error: null }),
+        onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+        signInWithPassword: () => Promise.resolve({ data: null, error: { message: 'Supabase not configured' } }),
+        signOut: () => Promise.resolve({ error: null })
+      },
+      from: () => ({
+        select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: null, error: { message: 'Supabase not configured' } }) }) }),
+        insert: () => ({ select: () => ({ single: () => Promise.resolve({ data: null, error: { message: 'Supabase not configured' } }) }) }),
+        update: () => ({ eq: () => Promise.resolve({ data: null, error: { message: 'Supabase not configured' } }) })
+      })
+    } as any
   }
 
   return createBrowserClient(supabaseUrl, supabaseAnonKey)
