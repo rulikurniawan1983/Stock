@@ -12,9 +12,12 @@ import {
   FileText,
   Stethoscope,
   Heart,
-  ChevronDown
+  ChevronDown,
+  FileSpreadsheet,
+  Upload
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import ExcelImportModal from './ExcelImportModal'
 
 export default function UPTDashboard() {
   const { user, signOut } = useAuth()
@@ -25,6 +28,7 @@ export default function UPTDashboard() {
   const [activeTab, setActiveTab] = useState('overview')
   const [showAddUsage, setShowAddUsage] = useState(false)
   const [showMedicalDropdown, setShowMedicalDropdown] = useState(false)
+  const [showExcelImport, setShowExcelImport] = useState(false)
 
   useEffect(() => {
     fetchData()
@@ -91,6 +95,12 @@ export default function UPTDashboard() {
     } catch (error) {
       console.error('Error adding usage:', error)
     }
+  }
+
+  const handleExcelImportSuccess = () => {
+    // Refresh data after successful import
+    fetchData()
+    setShowExcelImport(false)
   }
 
   const totalUsage = medicineUsage.reduce((sum, usage) => sum + usage.quantity_used, 0)
@@ -329,13 +339,22 @@ export default function UPTDashboard() {
           <div className="card">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-lg font-medium text-gray-900">Riwayat Penggunaan Obat</h3>
-              <button
-                onClick={() => setShowAddUsage(true)}
-                className="btn-primary flex items-center gap-2"
-              >
-                <Plus className="h-4 w-4" />
-                Tambah Penggunaan
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowExcelImport(true)}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center gap-2"
+                >
+                  <FileSpreadsheet className="h-4 w-4" />
+                  Import Excel
+                </button>
+                <button
+                  onClick={() => setShowAddUsage(true)}
+                  className="btn-primary flex items-center gap-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  Tambah Penggunaan
+                </button>
+              </div>
             </div>
 
             <div className="overflow-x-auto">
@@ -452,6 +471,16 @@ export default function UPTDashboard() {
           medicines={medicines}
           onClose={() => setShowAddUsage(false)}
           onAdd={handleAddUsage}
+        />
+      )}
+
+      {/* Excel Import Modal */}
+      {showExcelImport && (
+        <ExcelImportModal
+          isOpen={showExcelImport}
+          onClose={() => setShowExcelImport(false)}
+          onSuccess={handleExcelImportSuccess}
+          uptId={user?.upt_id || ''}
         />
       )}
     </div>
