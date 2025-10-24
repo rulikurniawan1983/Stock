@@ -1,6 +1,3 @@
--- Enable Row Level Security
-ALTER DATABASE postgres SET "app.jwt_secret" TO 'your-jwt-secret';
-
 -- Create UPT table
 CREATE TABLE IF NOT EXISTS upt (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -68,6 +65,16 @@ ALTER TABLE upt ENABLE ROW LEVEL SECURITY;
 ALTER TABLE medicines ENABLE ROW LEVEL SECURITY;
 ALTER TABLE medicine_usage ENABLE ROW LEVEL SECURITY;
 ALTER TABLE stock_transactions ENABLE ROW LEVEL SECURITY;
+
+-- Drop all existing policies to avoid conflicts
+DO $$ 
+DECLARE
+    r RECORD;
+BEGIN
+    FOR r IN (SELECT schemaname, tablename, policyname FROM pg_policies WHERE schemaname = 'public') LOOP
+        EXECUTE format('DROP POLICY IF EXISTS %I ON %I.%I', r.policyname, r.schemaname, r.tablename);
+    END LOOP;
+END $$;
 
 -- RLS Policies for users table
 CREATE POLICY "Users can view their own profile" ON users
@@ -167,6 +174,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Trigger to automatically update stock when medicine is used
+DROP TRIGGER IF EXISTS trigger_update_medicine_stock ON medicine_usage;
 CREATE TRIGGER trigger_update_medicine_stock
   AFTER INSERT ON medicine_usage
   FOR EACH ROW
@@ -181,6 +189,260 @@ INSERT INTO upt (id, name, address, phone) VALUES
   ('55555555-5555-5555-5555-555555555555', 'UPT Puskeswan Kecamatan E', 'Jl. Puskeswan E No. 5', '081234567894'),
   ('66666666-6666-6666-6666-666666666666', 'UPT Puskeswan Kecamatan F', 'Jl. Puskeswan F No. 6', '081234567895')
 ON CONFLICT (id) DO NOTHING;
+
+-- Create medical_records table
+CREATE TABLE IF NOT EXISTS medical_records (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  bulan VARCHAR(50) NOT NULL,
+  tanggal DATE NOT NULL,
+  pemilik VARCHAR(255) NOT NULL,
+  alamat_desa VARCHAR(255) NOT NULL,
+  alamat_kecamatan VARCHAR(255) NOT NULL,
+  jenis_ternak JSONB NOT NULL,
+  total_hewan INTEGER NOT NULL DEFAULT 0,
+  gejala_klinis TEXT[],
+  jenis_pengobatan VARCHAR(255) NOT NULL,
+  dosis_ml_ekor DECIMAL(10,2) NOT NULL,
+  petugas VARCHAR(255) NOT NULL,
+  status VARCHAR(20) NOT NULL CHECK (status IN ('AKTIF', 'PASIF', 'SEMI AKTIF')),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Create indexes for medical_records
+CREATE INDEX IF NOT EXISTS idx_medical_records_tanggal ON medical_records(tanggal);
+CREATE INDEX IF NOT EXISTS idx_medical_records_pemilik ON medical_records(pemilik);
+CREATE INDEX IF NOT EXISTS idx_medical_records_petugas ON medical_records(petugas);
+CREATE INDEX IF NOT EXISTS idx_medical_records_status ON medical_records(status);
+
+-- Enable RLS for medical_records
+ALTER TABLE medical_records ENABLE ROW LEVEL SECURITY;
+
+-- RLS Policies for medical_records table
+CREATE POLICY "Dinas can view all medical records" ON medical_records
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM users 
+      WHERE users.id = auth.uid() 
+      AND users.role = 'dinas'
+    )
+  );
+
+CREATE POLICY "UPT can view their own medical records" ON medical_records
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM users 
+      WHERE users.id = auth.uid() 
+      AND users.role = 'upt'
+    )
+  );
+
+CREATE POLICY "Dinas can insert medical records" ON medical_records
+  FOR INSERT WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM users 
+      WHERE users.id = auth.uid() 
+      AND users.role = 'dinas'
+    )
+  );
+
+CREATE POLICY "UPT can insert medical records" ON medical_records
+  FOR INSERT WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM users 
+      WHERE users.id = auth.uid() 
+      AND users.role = 'upt'
+    )
+  );
+
+-- Create animal_owners table
+CREATE TABLE IF NOT EXISTS animal_owners (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  phone VARCHAR(20),
+  address TEXT,
+  village VARCHAR(255),
+  district VARCHAR(255),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Create animals table
+CREATE TABLE IF NOT EXISTS animals (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  owner_id UUID NOT NULL REFERENCES animal_owners(id) ON DELETE CASCADE,
+  name VARCHAR(255),
+  species VARCHAR(100) NOT NULL,
+  breed VARCHAR(100),
+  age_months INTEGER,
+  gender VARCHAR(10) CHECK (gender IN ('jantan', 'betina')),
+  weight_kg DECIMAL(5,2),
+  color VARCHAR(100),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Create health_services table
+CREATE TABLE IF NOT EXISTS health_services (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  animal_id UUID NOT NULL REFERENCES animals(id) ON DELETE CASCADE,
+  upt_id UUID NOT NULL REFERENCES upt(id) ON DELETE CASCADE,
+  service_date DATE NOT NULL,
+  service_type VARCHAR(50) NOT NULL CHECK (service_type IN ('pemeriksaan', 'pengobatan', 'vaksinasi', 'operasi', 'konsultasi')),
+  chief_complaint TEXT,
+  anamnesis TEXT,
+  physical_examination TEXT,
+  diagnosis TEXT,
+  treatment_plan TEXT,
+  follow_up_notes TEXT,
+  veterinarian_name VARCHAR(255) NOT NULL,
+  status VARCHAR(20) NOT NULL CHECK (status IN ('selesai', 'rawat_jalan', 'rawat_inap', 'rujukan')),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Create health_service_medicines table (many-to-many relationship)
+CREATE TABLE IF NOT EXISTS health_service_medicines (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  health_service_id UUID NOT NULL REFERENCES health_services(id) ON DELETE CASCADE,
+  medicine_id UUID NOT NULL REFERENCES medicines(id) ON DELETE CASCADE,
+  quantity_used INTEGER NOT NULL,
+  dosage VARCHAR(100),
+  administration_route VARCHAR(50),
+  notes TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Create indexes for new tables
+CREATE INDEX IF NOT EXISTS idx_animals_owner_id ON animals(owner_id);
+CREATE INDEX IF NOT EXISTS idx_animals_species ON animals(species);
+CREATE INDEX IF NOT EXISTS idx_health_services_animal_id ON health_services(animal_id);
+CREATE INDEX IF NOT EXISTS idx_health_services_upt_id ON health_services(upt_id);
+CREATE INDEX IF NOT EXISTS idx_health_services_date ON health_services(service_date);
+CREATE INDEX IF NOT EXISTS idx_health_service_medicines_service_id ON health_service_medicines(health_service_id);
+CREATE INDEX IF NOT EXISTS idx_health_service_medicines_medicine_id ON health_service_medicines(medicine_id);
+
+-- Enable RLS for new tables
+ALTER TABLE animal_owners ENABLE ROW LEVEL SECURITY;
+ALTER TABLE animals ENABLE ROW LEVEL SECURITY;
+ALTER TABLE health_services ENABLE ROW LEVEL SECURITY;
+ALTER TABLE health_service_medicines ENABLE ROW LEVEL SECURITY;
+
+-- RLS Policies for animal_owners table
+CREATE POLICY "Dinas can view all animal owners" ON animal_owners
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM users 
+      WHERE users.id = auth.uid() 
+      AND users.role = 'dinas'
+    )
+  );
+
+CREATE POLICY "UPT can view animal owners in their area" ON animal_owners
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM users 
+      WHERE users.id = auth.uid() 
+      AND users.role = 'upt'
+    )
+  );
+
+CREATE POLICY "UPT can insert animal owners" ON animal_owners
+  FOR INSERT WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM users 
+      WHERE users.id = auth.uid() 
+      AND users.role = 'upt'
+    )
+  );
+
+-- RLS Policies for animals table
+CREATE POLICY "Dinas can view all animals" ON animals
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM users 
+      WHERE users.id = auth.uid() 
+      AND users.role = 'dinas'
+    )
+  );
+
+CREATE POLICY "UPT can view animals in their area" ON animals
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM users 
+      WHERE users.id = auth.uid() 
+      AND users.role = 'upt'
+    )
+  );
+
+CREATE POLICY "UPT can insert animals" ON animals
+  FOR INSERT WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM users 
+      WHERE users.id = auth.uid() 
+      AND users.role = 'upt'
+    )
+  );
+
+-- RLS Policies for health_services table
+CREATE POLICY "Dinas can view all health services" ON health_services
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM users 
+      WHERE users.id = auth.uid() 
+      AND users.role = 'dinas'
+    )
+  );
+
+CREATE POLICY "UPT can view their own health services" ON health_services
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM users 
+      WHERE users.id = auth.uid() 
+      AND users.upt_id = health_services.upt_id
+    )
+  );
+
+CREATE POLICY "UPT can insert health services" ON health_services
+  FOR INSERT WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM users 
+      WHERE users.id = auth.uid() 
+      AND users.upt_id = health_services.upt_id
+    )
+  );
+
+-- RLS Policies for health_service_medicines table
+CREATE POLICY "Dinas can view all health service medicines" ON health_service_medicines
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM users 
+      WHERE users.id = auth.uid() 
+      AND users.role = 'dinas'
+    )
+  );
+
+CREATE POLICY "UPT can view their own health service medicines" ON health_service_medicines
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM users 
+      WHERE users.id = auth.uid() 
+      AND users.upt_id = (
+        SELECT upt_id FROM health_services WHERE id = health_service_medicines.health_service_id
+      )
+    )
+  );
+
+CREATE POLICY "UPT can insert health service medicines" ON health_service_medicines
+  FOR INSERT WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM users 
+      WHERE users.id = auth.uid() 
+      AND users.upt_id = (
+        SELECT upt_id FROM health_services WHERE id = health_service_medicines.health_service_id
+      )
+    )
+  );
 
 -- Insert sample medicines data
 INSERT INTO medicines (name, category, unit, stock_initial, stock_current) VALUES

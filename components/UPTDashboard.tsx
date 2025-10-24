@@ -9,11 +9,14 @@ import {
   Plus,
   LogOut,
   Calendar,
-  FileText
+  FileText,
+  Stethoscope
 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 export default function UPTDashboard() {
   const { user, signOut } = useAuth()
+  const router = useRouter()
   const [medicines, setMedicines] = useState<Medicine[]>([])
   const [medicineUsage, setMedicineUsage] = useState<MedicineUsage[]>([])
   const [loading, setLoading] = useState(true)
@@ -114,7 +117,7 @@ export default function UPTDashboard() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="card">
             <div className="flex items-center">
               <div className="p-2 bg-primary-100 rounded-lg">
@@ -150,6 +153,18 @@ export default function UPTDashboard() {
               </div>
             </div>
           </div>
+
+          <div className="card cursor-pointer hover:shadow-lg transition-shadow" onClick={() => router.push('/rekam-medis')}>
+            <div className="flex items-center">
+              <div className="p-2 bg-purple-100 rounded-lg">
+                <Stethoscope className="h-6 w-6 text-purple-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Rekam Medis</p>
+                <p className="text-lg font-bold text-purple-600">Tambah Baru</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Navigation Tabs */}
@@ -159,7 +174,8 @@ export default function UPTDashboard() {
               {[
                 { id: 'overview', name: 'Overview' },
                 { id: 'medicines', name: 'Daftar Obat' },
-                { id: 'usage', name: 'Penggunaan Obat' }
+                { id: 'usage', name: 'Penggunaan Obat' },
+                { id: 'medical', name: 'Rekam Medis' }
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -294,6 +310,44 @@ export default function UPTDashboard() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'medical' && (
+          <div className="card">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-lg font-medium text-gray-900">Rekam Medis Hewan</h3>
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => router.push('/rekam-medis/daftar')}
+                  className="btn-secondary flex items-center gap-2"
+                >
+                  <FileText className="h-4 w-4" />
+                  Lihat Semua
+                </button>
+                <button
+                  onClick={() => router.push('/rekam-medis')}
+                  className="btn-primary flex items-center gap-2"
+                >
+                  <Stethoscope className="h-4 w-4" />
+                  Tambah Rekam Medis
+                </button>
+              </div>
+            </div>
+            
+            <div className="text-center py-12">
+              <Stethoscope className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+              <h4 className="text-lg font-medium text-gray-900 mb-2">Rekam Medis Hewan</h4>
+              <p className="text-gray-600 mb-6">
+                Catat rekam medis hewan dengan lengkap termasuk gejala klinis, pengobatan, dan informasi pemilik
+              </p>
+              <button
+                onClick={() => router.push('/rekam-medis')}
+                className="btn-primary"
+              >
+                Mulai Rekam Medis
+              </button>
             </div>
           </div>
         )}
