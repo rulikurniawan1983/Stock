@@ -20,7 +20,9 @@ import {
   Filter,
   Download,
   Calendar,
-  Search
+  Search,
+  Folder,
+  HardDrive
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import ExcelImportModal from './ExcelImportModal'
@@ -346,6 +348,18 @@ export default function DinasDashboard() {
                 </div>
               </div>
             )}
+          </div>
+
+          <div className="card cursor-pointer hover:shadow-lg transition-shadow" onClick={() => router.push('/storage')}>
+            <div className="flex items-center">
+              <div className="p-2 bg-indigo-100 rounded-lg">
+                <HardDrive className="h-6 w-6 text-indigo-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Storage</p>
+                <p className="text-lg font-bold text-indigo-600">Kelola File</p>
+              </div>
+            </div>
           </div>
         </div>
 

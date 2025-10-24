@@ -171,3 +171,20 @@ export interface HealthServiceMedicine {
   created_at: string
   medicines?: Medicine
 }
+
+export interface FileUpload {
+  id: string
+  filename: string
+  original_name: string
+  file_path: string
+  file_size: number
+  mime_type: string
+  bucket_name: string
+  uploaded_by: string
+  uploaded_at: string
+  description?: string
+  tags?: string[]
+  is_public: boolean
+  download_count: number
+  last_accessed?: string
+}

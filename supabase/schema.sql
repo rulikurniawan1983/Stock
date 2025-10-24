@@ -190,6 +190,72 @@ INSERT INTO upt (id, name, address, phone) VALUES
   ('66666666-6666-6666-6666-666666666666', 'UPT Puskeswan 6', 'Jl. Puskeswan 6 No. 6', '081234567895')
 ON CONFLICT (id) DO NOTHING;
 
+-- Create storage buckets
+INSERT INTO storage.buckets (id, name, public) VALUES
+  ('documents', 'documents', true),
+  ('images', 'images', true),
+  ('reports', 'reports', true),
+  ('templates', 'templates', true),
+  ('attachments', 'attachments', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Create file_uploads table for tracking uploaded files
+CREATE TABLE IF NOT EXISTS file_uploads (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  filename VARCHAR(255) NOT NULL,
+  original_name VARCHAR(255) NOT NULL,
+  file_path TEXT NOT NULL,
+  file_size BIGINT NOT NULL,
+  mime_type VARCHAR(100) NOT NULL,
+  bucket_name VARCHAR(50) NOT NULL,
+  uploaded_by UUID REFERENCES users(id),
+  uploaded_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  description TEXT,
+  tags TEXT[],
+  is_public BOOLEAN DEFAULT true,
+  download_count INTEGER DEFAULT 0,
+  last_accessed TIMESTAMP WITH TIME ZONE
+);
+
+-- Create indexes for file_uploads
+CREATE INDEX IF NOT EXISTS idx_file_uploads_bucket ON file_uploads(bucket_name);
+CREATE INDEX IF NOT EXISTS idx_file_uploads_uploaded_by ON file_uploads(uploaded_by);
+CREATE INDEX IF NOT EXISTS idx_file_uploads_uploaded_at ON file_uploads(uploaded_at);
+CREATE INDEX IF NOT EXISTS idx_file_uploads_mime_type ON file_uploads(mime_type);
+
+-- RLS policies for file_uploads
+ALTER TABLE file_uploads ENABLE ROW LEVEL SECURITY;
+
+-- Policy: Users can view all public files
+CREATE POLICY "Public files are viewable by everyone" ON file_uploads
+  FOR SELECT USING (is_public = true);
+
+-- Policy: Users can view their own files
+CREATE POLICY "Users can view their own files" ON file_uploads
+  FOR SELECT USING (auth.uid() = uploaded_by);
+
+-- Policy: Users can insert their own files
+CREATE POLICY "Users can insert their own files" ON file_uploads
+  FOR INSERT WITH CHECK (auth.uid() = uploaded_by);
+
+-- Policy: Users can update their own files
+CREATE POLICY "Users can update their own files" ON file_uploads
+  FOR UPDATE USING (auth.uid() = uploaded_by);
+
+-- Policy: Users can delete their own files
+CREATE POLICY "Users can delete their own files" ON file_uploads
+  FOR DELETE USING (auth.uid() = uploaded_by);
+
+-- Policy: Dinas can manage all files
+CREATE POLICY "Dinas can manage all files" ON file_uploads
+  FOR ALL USING (
+    EXISTS (
+      SELECT 1 FROM users 
+      WHERE users.id = auth.uid() 
+      AND users.role = 'dinas'
+    )
+  );
+
 -- Create medical_records table
 CREATE TABLE IF NOT EXISTS medical_records (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,

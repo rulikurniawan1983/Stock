@@ -8,7 +8,9 @@ interface PageHeaderProps {
   title: string
   subtitle?: string
   showBackButton?: boolean
+  showBack?: boolean
   backUrl?: string
+  onBack?: () => void
   showLogout?: boolean
   actions?: React.ReactNode
 }
@@ -17,7 +19,9 @@ export default function PageHeader({
   title,
   subtitle,
   showBackButton = true,
+  showBack = false,
   backUrl,
+  onBack,
   showLogout = true,
   actions
 }: PageHeaderProps) {
@@ -25,7 +29,9 @@ export default function PageHeader({
   const { user, signOut } = useAuth()
 
   const handleBack = () => {
-    if (backUrl) {
+    if (onBack) {
+      onBack()
+    } else if (backUrl) {
       router.push(backUrl)
     } else {
       router.back()
@@ -46,7 +52,7 @@ export default function PageHeader({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-6">
           <div className="flex items-center space-x-4">
-            {showBackButton && (
+            {(showBackButton || showBack) && (
               <button
                 onClick={handleBack}
                 className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
