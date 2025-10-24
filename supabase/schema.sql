@@ -4,7 +4,12 @@ CREATE TABLE IF NOT EXISTS upt (
   name VARCHAR(255) NOT NULL,
   address TEXT,
   phone VARCHAR(20),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  email VARCHAR(255),
+  website VARCHAR(255),
+  description TEXT,
+  is_active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Create users table
@@ -13,7 +18,14 @@ CREATE TABLE IF NOT EXISTS users (
   email VARCHAR(255) UNIQUE NOT NULL,
   role VARCHAR(20) NOT NULL CHECK (role IN ('dinas', 'upt')),
   upt_id UUID REFERENCES upt(id),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  first_name VARCHAR(100),
+  last_name VARCHAR(100),
+  phone VARCHAR(20),
+  avatar_url TEXT,
+  is_active BOOLEAN DEFAULT TRUE,
+  last_login TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Create medicines table
@@ -24,6 +36,14 @@ CREATE TABLE IF NOT EXISTS medicines (
   unit VARCHAR(50) NOT NULL,
   stock_initial INTEGER NOT NULL DEFAULT 0,
   stock_current INTEGER NOT NULL DEFAULT 0,
+  min_stock_level INTEGER DEFAULT 10,
+  max_stock_level INTEGER DEFAULT 1000,
+  expiry_date DATE,
+  batch_number VARCHAR(100),
+  supplier VARCHAR(255),
+  price_per_unit DECIMAL(10,2),
+  description TEXT,
+  is_active BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -33,12 +53,17 @@ CREATE TABLE IF NOT EXISTS medicine_usage (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   medicine_id UUID NOT NULL REFERENCES medicines(id) ON DELETE CASCADE,
   upt_id UUID NOT NULL REFERENCES upt(id) ON DELETE CASCADE,
-  quantity_used INTEGER NOT NULL,
+  quantity_used INTEGER NOT NULL CHECK (quantity_used > 0),
   disease_treated VARCHAR(255) NOT NULL,
   animal_type VARCHAR(100) NOT NULL,
   usage_date DATE NOT NULL,
+  dosage VARCHAR(100),
+  administration_route VARCHAR(50),
+  veterinarian_name VARCHAR(255),
+  patient_name VARCHAR(255),
   notes TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Create stock_transactions table
@@ -46,10 +71,18 @@ CREATE TABLE IF NOT EXISTS stock_transactions (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   medicine_id UUID NOT NULL REFERENCES medicines(id) ON DELETE CASCADE,
   upt_id UUID NOT NULL REFERENCES upt(id) ON DELETE CASCADE,
-  transaction_type VARCHAR(10) NOT NULL CHECK (transaction_type IN ('in', 'out')),
+  transaction_type VARCHAR(10) NOT NULL CHECK (transaction_type IN ('in', 'out', 'adjustment', 'expired', 'damaged')),
   quantity INTEGER NOT NULL,
+  unit_price DECIMAL(10,2),
+  total_price DECIMAL(10,2),
+  supplier VARCHAR(255),
+  batch_number VARCHAR(100),
+  expiry_date DATE,
   reason TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  reference_number VARCHAR(100),
+  created_by UUID REFERENCES users(id),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Create indexes for better performance
@@ -271,6 +304,12 @@ CREATE TABLE IF NOT EXISTS medical_records (
   dosis_ml_ekor DECIMAL(10,2) NOT NULL,
   petugas VARCHAR(255) NOT NULL,
   status VARCHAR(20) NOT NULL CHECK (status IN ('AKTIF', 'PASIF', 'SEMI AKTIF')),
+  upt_id UUID REFERENCES upt(id) ON DELETE CASCADE,
+  record_number VARCHAR(100),
+  follow_up_date DATE,
+  follow_up_notes TEXT,
+  treatment_cost DECIMAL(10,2),
+  payment_status VARCHAR(20) DEFAULT 'unpaid' CHECK (payment_status IN ('paid', 'unpaid', 'partial')),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -349,9 +388,15 @@ CREATE TABLE IF NOT EXISTS animal_owners (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
   phone VARCHAR(20),
+  email VARCHAR(255),
   address TEXT,
   village VARCHAR(255),
   district VARCHAR(255),
+  postal_code VARCHAR(10),
+  id_number VARCHAR(50),
+  occupation VARCHAR(100),
+  notes TEXT,
+  is_active BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -367,6 +412,13 @@ CREATE TABLE IF NOT EXISTS animals (
   gender VARCHAR(10) CHECK (gender IN ('jantan', 'betina')),
   weight_kg DECIMAL(5,2),
   color VARCHAR(100),
+  microchip_id VARCHAR(100),
+  birth_date DATE,
+  health_status VARCHAR(20) DEFAULT 'healthy' CHECK (health_status IN ('healthy', 'sick', 'recovering', 'quarantine')),
+  vaccination_status VARCHAR(20) DEFAULT 'unknown' CHECK (vaccination_status IN ('up_to_date', 'overdue', 'unknown')),
+  last_vaccination_date DATE,
+  notes TEXT,
+  is_active BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -377,7 +429,7 @@ CREATE TABLE IF NOT EXISTS health_services (
   animal_id UUID NOT NULL REFERENCES animals(id) ON DELETE CASCADE,
   upt_id UUID NOT NULL REFERENCES upt(id) ON DELETE CASCADE,
   service_date DATE NOT NULL,
-  service_type VARCHAR(50) NOT NULL CHECK (service_type IN ('pemeriksaan', 'pengobatan', 'vaksinasi', 'operasi', 'konsultasi')),
+  service_type VARCHAR(50) NOT NULL CHECK (service_type IN ('pemeriksaan', 'pengobatan', 'vaksinasi', 'operasi', 'konsultasi', 'emergency', 'follow_up')),
   chief_complaint TEXT,
   anamnesis TEXT,
   physical_examination TEXT,
@@ -385,7 +437,11 @@ CREATE TABLE IF NOT EXISTS health_services (
   treatment_plan TEXT,
   follow_up_notes TEXT,
   veterinarian_name VARCHAR(255) NOT NULL,
-  status VARCHAR(20) NOT NULL CHECK (status IN ('selesai', 'rawat_jalan', 'rawat_inap', 'rujukan')),
+  status VARCHAR(20) NOT NULL CHECK (status IN ('selesai', 'rawat_jalan', 'rawat_inap', 'rujukan', 'pending', 'cancelled')),
+  service_number VARCHAR(100),
+  total_cost DECIMAL(10,2),
+  payment_status VARCHAR(20) DEFAULT 'unpaid' CHECK (payment_status IN ('paid', 'unpaid', 'partial')),
+  next_appointment DATE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -398,8 +454,11 @@ CREATE TABLE IF NOT EXISTS health_service_medicines (
   quantity_used INTEGER NOT NULL CHECK (quantity_used > 0),
   dosage VARCHAR(100),
   administration_route VARCHAR(50),
+  unit_price DECIMAL(10,2),
+  total_price DECIMAL(10,2),
   notes TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Create indexes for new tables
