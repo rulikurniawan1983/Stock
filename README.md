@@ -354,4 +354,10 @@ Untuk pertanyaan atau dukungan, silakan hubungi:
 
 ---
 
+## 📝 Copyright
+
+**© 2024 Ruli Kurniawan, S.Pt**  
+**Email**: rulikurniawan1983@gmail.com  
+**Phone**: 08567884566  
+
 **Dibuat dengan ❤️ untuk Dinas Peternakan dan UPT Puskeswan**
