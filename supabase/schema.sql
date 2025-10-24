@@ -95,11 +95,10 @@ CREATE INDEX IF NOT EXISTS idx_stock_transactions_medicine_id ON stock_transacti
 CREATE INDEX IF NOT EXISTS idx_stock_transactions_type ON stock_transactions(transaction_type);
 CREATE INDEX IF NOT EXISTS idx_stock_transactions_date ON stock_transactions(created_at);
 CREATE INDEX IF NOT EXISTS idx_medicines_category ON medicines(category);
-CREATE INDEX IF NOT EXISTS idx_medicines_supplier ON medicines(supplier);
-CREATE INDEX IF NOT EXISTS idx_medicines_expiry ON medicines(expiry_date);
-CREATE INDEX IF NOT EXISTS idx_upt_active ON upt(is_active);
+-- Index for supplier will be created after column addition
+-- Index for expiry_date will be created after column addition
+-- Indexes for is_active will be created after column addition
 CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
-CREATE INDEX IF NOT EXISTS idx_users_active ON users(is_active);
 
 -- Create notifications table for system notifications
 CREATE TABLE IF NOT EXISTS notifications (
@@ -622,6 +621,16 @@ END $$;
 
 -- Create index for veterinarian_name after column addition
 CREATE INDEX IF NOT EXISTS idx_medicine_usage_veterinarian ON medicine_usage(veterinarian_name);
+
+-- Create index for supplier after column addition
+CREATE INDEX IF NOT EXISTS idx_medicines_supplier ON medicines(supplier);
+
+-- Create index for expiry_date after column addition
+CREATE INDEX IF NOT EXISTS idx_medicines_expiry ON medicines(expiry_date);
+
+-- Create indexes for is_active after column addition
+CREATE INDEX IF NOT EXISTS idx_upt_active ON upt(is_active);
+CREATE INDEX IF NOT EXISTS idx_users_active ON users(is_active);
 
 -- Create indexes for medical_records
 CREATE INDEX IF NOT EXISTS idx_medical_records_tanggal ON medical_records(tanggal);
