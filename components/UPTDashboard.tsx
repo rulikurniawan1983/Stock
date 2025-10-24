@@ -206,6 +206,17 @@ export default function UPTDashboard() {
                 <div className="py-2">
                   <button
                     onClick={() => {
+                      router.push('/pelayanan-terpadu')
+                      setShowMedicalDropdown(false)
+                    }}
+                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 bg-blue-50"
+                  >
+                    <Heart className="h-4 w-4 text-blue-600" />
+                    <span className="font-medium text-blue-900">Form Terpadu (Rekomended)</span>
+                  </button>
+                  <div className="border-t border-gray-100 my-1"></div>
+                  <button
+                    onClick={() => {
                       router.push('/rekam-medis')
                       setShowMedicalDropdown(false)
                     }}
