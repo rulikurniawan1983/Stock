@@ -89,8 +89,82 @@ CREATE TABLE IF NOT EXISTS stock_transactions (
 CREATE INDEX IF NOT EXISTS idx_medicine_usage_upt_id ON medicine_usage(upt_id);
 CREATE INDEX IF NOT EXISTS idx_medicine_usage_medicine_id ON medicine_usage(medicine_id);
 CREATE INDEX IF NOT EXISTS idx_medicine_usage_date ON medicine_usage(usage_date);
+CREATE INDEX IF NOT EXISTS idx_medicine_usage_veterinarian ON medicine_usage(veterinarian_name);
 CREATE INDEX IF NOT EXISTS idx_stock_transactions_upt_id ON stock_transactions(upt_id);
 CREATE INDEX IF NOT EXISTS idx_stock_transactions_medicine_id ON stock_transactions(medicine_id);
+CREATE INDEX IF NOT EXISTS idx_stock_transactions_type ON stock_transactions(transaction_type);
+CREATE INDEX IF NOT EXISTS idx_stock_transactions_date ON stock_transactions(created_at);
+CREATE INDEX IF NOT EXISTS idx_medicines_category ON medicines(category);
+CREATE INDEX IF NOT EXISTS idx_medicines_supplier ON medicines(supplier);
+CREATE INDEX IF NOT EXISTS idx_medicines_expiry ON medicines(expiry_date);
+CREATE INDEX IF NOT EXISTS idx_upt_active ON upt(is_active);
+CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
+CREATE INDEX IF NOT EXISTS idx_users_active ON users(is_active);
+
+-- Create notifications table for system notifications
+CREATE TABLE IF NOT EXISTS notifications (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  title VARCHAR(255) NOT NULL,
+  message TEXT NOT NULL,
+  type VARCHAR(50) NOT NULL CHECK (type IN ('info', 'warning', 'error', 'success')),
+  is_read BOOLEAN DEFAULT FALSE,
+  action_url TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Create audit_logs table for tracking changes
+CREATE TABLE IF NOT EXISTS audit_logs (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  table_name VARCHAR(100) NOT NULL,
+  record_id UUID NOT NULL,
+  action VARCHAR(20) NOT NULL CHECK (action IN ('INSERT', 'UPDATE', 'DELETE')),
+  old_values JSONB,
+  new_values JSONB,
+  ip_address INET,
+  user_agent TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Create system_settings table for application configuration
+CREATE TABLE IF NOT EXISTS system_settings (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  key VARCHAR(100) UNIQUE NOT NULL,
+  value TEXT,
+  description TEXT,
+  category VARCHAR(50) DEFAULT 'general',
+  is_public BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Create backup_logs table for tracking data exports
+CREATE TABLE IF NOT EXISTS backup_logs (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  export_type VARCHAR(50) NOT NULL,
+  file_name VARCHAR(255) NOT NULL,
+  record_count INTEGER DEFAULT 0,
+  file_size BIGINT DEFAULT 0,
+  status VARCHAR(20) DEFAULT 'completed' CHECK (status IN ('pending', 'processing', 'completed', 'failed')),
+  error_message TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Create indexes for new tables
+CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_read ON notifications(is_read);
+CREATE INDEX IF NOT EXISTS idx_notifications_type ON notifications(type);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_user_id ON audit_logs(user_id);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_table ON audit_logs(table_name);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_action ON audit_logs(action);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_date ON audit_logs(created_at);
+CREATE INDEX IF NOT EXISTS idx_system_settings_key ON system_settings(key);
+CREATE INDEX IF NOT EXISTS idx_system_settings_category ON system_settings(category);
+CREATE INDEX IF NOT EXISTS idx_backup_logs_user_id ON backup_logs(user_id);
+CREATE INDEX IF NOT EXISTS idx_backup_logs_type ON backup_logs(export_type);
+CREATE INDEX IF NOT EXISTS idx_backup_logs_status ON backup_logs(status);
 
 -- Enable Row Level Security
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
@@ -98,6 +172,10 @@ ALTER TABLE upt ENABLE ROW LEVEL SECURITY;
 ALTER TABLE medicines ENABLE ROW LEVEL SECURITY;
 ALTER TABLE medicine_usage ENABLE ROW LEVEL SECURITY;
 ALTER TABLE stock_transactions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE system_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE backup_logs ENABLE ROW LEVEL SECURITY;
 
 -- Drop all existing policies to avoid conflicts
 DO $$ 
@@ -595,6 +673,58 @@ CREATE POLICY "UPT can insert health service medicines" ON health_service_medici
     )
   );
 
+-- RLS Policies for notifications table
+CREATE POLICY "Users can view their own notifications" ON notifications
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can update their own notifications" ON notifications
+  FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "System can insert notifications" ON notifications
+  FOR INSERT WITH CHECK (true);
+
+-- RLS Policies for audit_logs table
+CREATE POLICY "Dinas can view all audit logs" ON audit_logs
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM users 
+      WHERE users.id = auth.uid() 
+      AND users.role = 'dinas'
+    )
+  );
+
+CREATE POLICY "UPT can view their own audit logs" ON audit_logs
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM users 
+      WHERE users.id = auth.uid() 
+      AND users.role = 'upt'
+    )
+  );
+
+CREATE POLICY "System can insert audit logs" ON audit_logs
+  FOR INSERT WITH CHECK (true);
+
+-- RLS Policies for system_settings table
+CREATE POLICY "Dinas can manage system settings" ON system_settings
+  FOR ALL USING (
+    EXISTS (
+      SELECT 1 FROM users 
+      WHERE users.id = auth.uid() 
+      AND users.role = 'dinas'
+    )
+  );
+
+CREATE POLICY "Users can view public settings" ON system_settings
+  FOR SELECT USING (is_public = true);
+
+-- RLS Policies for backup_logs table
+CREATE POLICY "Users can view their own backup logs" ON backup_logs
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert their own backup logs" ON backup_logs
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
 -- Insert sample medicines data
 INSERT INTO medicines (name, category, unit, stock_initial, stock_current) VALUES
   ('Antibiotik Amoxicillin', 'Antibiotik', 'tablet', 1000, 1000),
@@ -701,4 +831,25 @@ INSERT INTO medicine_usage (medicine_id, upt_id, quantity_used, disease_treated,
   ((SELECT id FROM medicines WHERE name = 'Antibiotik Gentamicin' LIMIT 1), '33333333-3333-3333-3333-333333333333', 1, 'Luka dalam', 'Anjing', '2024-01-19', 'Antibiotik untuk mencegah infeksi luka'),
   ((SELECT id FROM medicines WHERE name = 'Vitamin E' LIMIT 1), '33333333-3333-3333-3333-333333333333', 2, 'Gangguan reproduksi', 'Domba', '2024-01-20', 'Terapi hormonal untuk domba yang tidak subur'),
   ((SELECT id FROM medicines WHERE name = 'Obat Cacing Albendazole' LIMIT 1), '33333333-3333-3333-3333-333333333333', 1, 'Gangguan reproduksi', 'Domba', '2024-01-20', 'Obat cacing untuk domba yang tidak subur')
+ON CONFLICT DO NOTHING;
+
+-- Insert sample system settings
+INSERT INTO system_settings (key, value, description, category, is_public) VALUES
+  ('app_name', 'Sistem Manajemen Obat Hewan', 'Nama aplikasi', 'general', true),
+  ('app_version', '2.1.0', 'Versi aplikasi', 'general', true),
+  ('maintenance_mode', 'false', 'Mode maintenance', 'system', false),
+  ('max_file_size', '10485760', 'Maksimal ukuran file upload (bytes)', 'upload', true),
+  ('allowed_file_types', 'xlsx,xls,csv', 'Tipe file yang diizinkan', 'upload', true),
+  ('backup_retention_days', '30', 'Hari retensi backup', 'backup', false),
+  ('notification_enabled', 'true', 'Notifikasi aktif', 'notification', true),
+  ('audit_log_enabled', 'true', 'Audit log aktif', 'audit', false),
+  ('stock_alert_threshold', '10', 'Threshold alert stok rendah', 'inventory', true),
+  ('export_limit_per_day', '10', 'Limit export per hari', 'export', false)
+ON CONFLICT (key) DO NOTHING;
+
+-- Insert sample notifications
+INSERT INTO notifications (user_id, title, message, type, action_url) VALUES
+  ((SELECT id FROM users WHERE role = 'dinas' LIMIT 1), 'Selamat Datang', 'Selamat datang di sistem manajemen obat hewan', 'info', '/dinas'),
+  ((SELECT id FROM users WHERE role = 'upt' LIMIT 1), 'Stok Rendah', 'Beberapa obat memiliki stok yang rendah', 'warning', '/upt'),
+  ((SELECT id FROM users WHERE role = 'upt' LIMIT 1), 'Export Berhasil', 'Data berhasil diekspor ke Excel', 'success', '/upt')
 ON CONFLICT DO NOTHING;
