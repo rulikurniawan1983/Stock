@@ -150,7 +150,7 @@ export default function ExcelImportModal({ isOpen, onClose, onSuccess, uptId }: 
         throw new Error('Tidak dapat mengambil data obat')
       }
 
-      const medicineMap = new Map(medicines.map(m => [m.name.toLowerCase(), m.id]))
+      const medicineMap = new Map(medicines.map((m: any) => [m.name.toLowerCase(), m.id]))
       const errors: string[] = []
       let successCount = 0
 

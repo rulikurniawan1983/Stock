@@ -15,8 +15,6 @@ import {
   Stethoscope,
   Heart,
   ChevronDown,
-  FileSpreadsheet,
-  Upload,
   Filter,
   Download,
   Calendar,
@@ -25,7 +23,6 @@ import {
   HardDrive
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import ExcelImportModal from './ExcelImportModal'
 
 export default function DinasDashboard() {
   const { user, signOut } = useAuth()
@@ -37,7 +34,6 @@ export default function DinasDashboard() {
   const [activeTab, setActiveTab] = useState('overview')
   const [showAddMedicine, setShowAddMedicine] = useState(false)
   const [showMedicalDropdown, setShowMedicalDropdown] = useState(false)
-  const [showExcelImport, setShowExcelImport] = useState(false)
   const [usageFilters, setUsageFilters] = useState({
     search: '',
     upt: '',
@@ -431,13 +427,6 @@ export default function DinasDashboard() {
               <h3 className="text-lg font-medium text-gray-900">Daftar Obat</h3>
               <div className="flex gap-3">
                 <button
-                  onClick={() => setShowExcelImport(true)}
-                  className="btn-secondary flex items-center gap-2"
-                >
-                  <FileSpreadsheet className="h-4 w-4" />
-                  Import Excel
-                </button>
-                <button
                   onClick={() => setShowAddMedicine(true)}
                   className="btn-primary flex items-center gap-2"
                 >
@@ -732,17 +721,6 @@ export default function DinasDashboard() {
         />
       )}
 
-      {/* Excel Import Modal */}
-      {showExcelImport && (
-        <ExcelImportModal
-          isOpen={showExcelImport}
-          onClose={() => setShowExcelImport(false)}
-          onSuccess={() => {
-            setShowExcelImport(false)
-            fetchData() // Refresh data after import
-          }}
-        />
-      )}
     </div>
   )
 }
