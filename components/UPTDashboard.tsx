@@ -14,10 +14,12 @@ import {
   Heart,
   ChevronDown,
   FileSpreadsheet,
-  Upload
+  Upload,
+  Download
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import ExcelImportModal from './ExcelImportModal'
+import * as ExcelJS from 'exceljs'
 
 export default function UPTDashboard() {
   const { user, signOut } = useAuth()
@@ -101,6 +103,77 @@ export default function UPTDashboard() {
     // Refresh data after successful import
     fetchData()
     setShowExcelImport(false)
+  }
+
+  const handleExportExcel = async () => {
+    try {
+      const workbook = new ExcelJS.Workbook()
+      const worksheet = workbook.addWorksheet('Riwayat Penggunaan Obat')
+
+      // Set headers
+      worksheet.columns = [
+        { header: 'Tanggal', key: 'date', width: 15 },
+        { header: 'Nama Obat', key: 'medicine', width: 25 },
+        { header: 'Jumlah', key: 'quantity', width: 15 },
+        { header: 'Unit', key: 'unit', width: 10 },
+        { header: 'Penyakit', key: 'disease', width: 25 },
+        { header: 'Jenis Hewan', key: 'animal', width: 20 },
+        { header: 'Catatan', key: 'notes', width: 30 }
+      ]
+
+      // Style headers
+      worksheet.getRow(1).font = { bold: true }
+      worksheet.getRow(1).fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFE6E6FA' }
+      }
+
+      // Add data
+      medicineUsage.forEach((usage) => {
+        worksheet.addRow({
+          date: new Date(usage.usage_date).toLocaleDateString('id-ID'),
+          medicine: usage.medicines?.name || '',
+          quantity: usage.quantity_used,
+          unit: usage.medicines?.unit || '',
+          disease: usage.disease_treated || '',
+          animal: usage.animal_type || '',
+          notes: usage.notes || ''
+        })
+      })
+
+      // Auto-fit columns
+      worksheet.columns.forEach(column => {
+        if (column.eachCell) {
+          column.eachCell({ includeEmpty: true }, (cell) => {
+            if (cell.value) {
+              const columnLength = cell.value.toString().length
+              if (column.width && columnLength > column.width) {
+                column.width = columnLength + 2
+              }
+            }
+          })
+        }
+      })
+
+      // Generate filename with current date
+      const currentDate = new Date().toISOString().split('T')[0]
+      const filename = `Riwayat_Penggunaan_Obat_${currentDate}.xlsx`
+
+      // Save file
+      const buffer = await workbook.xlsx.writeBuffer()
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = filename
+      link.click()
+      window.URL.revokeObjectURL(url)
+
+    } catch (error) {
+      console.error('Error exporting to Excel:', error)
+      alert('Gagal mengexport data ke Excel. Silakan coba lagi.')
+    }
   }
 
   const totalUsage = medicineUsage.reduce((sum, usage) => sum + usage.quantity_used, 0)
@@ -351,6 +424,13 @@ export default function UPTDashboard() {
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-lg font-medium text-gray-900">Riwayat Penggunaan Obat</h3>
               <div className="flex gap-2">
+                <button
+                  onClick={handleExportExcel}
+                  className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 flex items-center gap-2"
+                >
+                  <Download className="h-4 w-4" />
+                  Export Excel
+                </button>
                 <button
                   onClick={() => setShowExcelImport(true)}
                   className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center gap-2"
